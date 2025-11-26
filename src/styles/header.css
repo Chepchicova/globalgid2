@@ -1,0 +1,235 @@
+/* Общий контейнер хедера */
+.header {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 12px 30px;
+  background-color: #fff;
+  border-bottom: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+  z-index: 1000; 
+}
+
+/* Логотип */
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Поисковая строка по центру */
+.search-bar {
+  position: relative;
+  width: 60%;
+  max-width: 400px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 8px 12px 8px 35px; /* добавляем отступ слева под иконку */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px; /* фиксируем иконку внутри поля слева */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* чтобы клик не мешал вводу */
+}
+
+/* Навигация справа */
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav a {
+  text-decoration: none;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+}
+/*
+.nav a:hover {
+  color: #44706d;
+}
+*/
+/* Иконка в навигации */
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Кнопка входа */
+.login-btn {
+  padding: 10px 16px;
+  font-size: 15px;
+  background-color: rgba(45, 75, 73, 1); 
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-btn:hover {
+  background-color: #44706d;
+}
+
+.nav-links {
+  list-style: none;     /* убираем маркеры (точки) */
+  padding: 0;           /* убираем отступы */
+  margin: 0;            /* убираем внешние отступы */
+}
+
+.nav-links li {
+  display: inline-block; /* если нужно горизонтальное меню */
+  margin-right: 20px;    /* отступ между пунктами */
+}
+
+/* чекбокс скрыт --------------------------- */
+.burger-checkbox {
+  position: absolute;
+  visibility: hidden;
+}
+
+/* бургер‑иконка */
+.burger {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  display: none; /* по умолчанию скрыт на десктопе */
+  width: 40px;
+  height: 26px;
+  border: none;
+  z-index: 1001;
+}
+
+.burger::before, /* отрисовка 2х полосок бургера */
+.burger::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  border-radius: 10px;
+  background: #000;
+}
+
+.burger::before {
+  top: 0;
+  box-shadow: 0 11px 0 #000; /*отрисовка первой полоски и ее тени(2 верхние)*/
+  transition: box-shadow .3s .15s, top .3s .15s,  transform .3s;
+}
+
+.burger::after { /*отрисовка нижней полоски*/
+  bottom: 0;
+  transition: bottom .3s .15s, transform .3s;
+}
+
+/* анимация при клике */
+.burger-checkbox:checked + .burger::before {
+  top: 11px;
+  transform: rotate(45deg);
+  box-shadow: none;
+  background: #fff;
+}
+
+.burger-checkbox:checked + .burger::after {
+  bottom: 11px;
+  transform: rotate(-45deg);
+  background: #fff;
+}
+
+/*медиа для поисковой строки*/
+@media (max-width: 1140px) {
+  .search-bar {
+    max-width: 300px; /* можно задать меньшее ограничение */
+  }
+}
+
+@media (max-width: 995px) {
+  .search-bar {
+    
+    display: none; 
+  }
+}
+
+/* мобильная версия */
+@media (max-width: 690px) {
+  .header {
+    padding: 8px 20px;   /* чуть меньше отступы */
+  }
+
+  .logo-text {
+    font-size: 18px;     /* уменьшили текст логотипа */
+  }
+
+  .nav a {
+    font-size: 14px;     /* ссылки стали немного компактнее */
+  }
+
+  .login-btn {
+    padding: 8px 14px;   /* кнопка чуть меньше */
+    font-size: 14px;
+  }
+  .burger {
+    display: block; /* показываем бургер */
+  }
+
+  /* скрываем меню по умолчанию */
+  .nav-links {
+  display: none;
+  position: fixed;   /* фиксируем относительно окна браузера */
+  top: 0;
+  left: 0;
+  height: 100vh;     /* высота во весь экран */
+  background: #2D4B49;
+  padding: 80px 0% 0% 10%; /* отступы внутри */
+  display: flex;
+  flex-direction: column;
+  gap: 5%;
+  transform: translateX(-100%);
+  transition: transform .3s ease;
+  width: 200px;
+  z-index: 1000;
+  }
+  
+.nav-links li a {
+  color: #fff;          /* белый текст */
+  font-size: 20px;
+}
+
+  /* показываем меню, когда чекбокс активен */
+  .burger-checkbox:checked ~ .nav-button .nav-links {
+    transform: translateX(0);
+  }
+}
+
+

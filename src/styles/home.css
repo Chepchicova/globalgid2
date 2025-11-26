@@ -1,0 +1,639 @@
+.home {
+  font-family: Arial, sans-serif;
+  background-color: rgba(241, 243, 248, 1);
+}
+
+.banner {
+  position: relative;
+  text-align: center;
+  padding: 120px 20px 60px 20px; /**/
+  background: url("../components/images/landing_tour_promo.webp") no-repeat center/cover;
+  color: white;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* растягиваем на всю карточку */
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Контент баннера */
+.banner h1,
+.banner p,
+.banner .search-form {
+  position: relative;
+  z-index: 2; /* контент выше затемнения */
+}
+
+.banner h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.banner p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+/* Поисковая форма */
+
+.search-form {
+  display: flex;
+  justify-content: center;
+  width: 750px;
+  margin: 0 auto; 
+  gap: 12px;
+  background: rgba(198, 194, 149, 0.8);
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1); /*надо не надо*/
+}
+
+/* Поисковая строка по центру */
+.search-bar-banner {
+  position: relative;
+  width: 60%;
+  max-width: 400px;
+}
+
+.search-icons {
+  position: absolute;
+  left: 12px; /* фиксируем иконку внутри поля слева */
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* чтобы клик не мешал вводу */
+}
+
+.search-bar-banner input {
+  width: 100%;
+  padding: 8px 12px 8px 35px; /* добавляем отступ слева под иконку */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-form button {
+  padding: 8px 16px;
+  background-color: rgba(45, 75, 73, 1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.search-form button:hover {
+  background-color: #44706d;
+}
+
+/*популярные направления*/
+.popular {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.popular h2 {
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+.card {
+  display: grid;
+  margin: 0 auto;
+  grid-template-columns: repeat(5, 1fr); /* 5 карточек в ряд */
+  gap: 15px;
+  width: 85%;
+  margin-bottom: 30px;
+}
+
+.city-card {
+  position: relative;
+  display: block;
+  height: 180px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: white;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s ease;
+  overflow: hidden; /* чтобы градиент не выходил за границы */
+}
+
+.city-card::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* растягиваем на всю карточку */
+  background: linear-gradient(to bottom, rgba(148, 148, 148, 0), rgba(0, 0, 0, 0.475));
+}
+
+.city-card:hover {
+  transform: scale(1.03);
+}
+
+.card-overlay {
+  position: absolute;
+  bottom: 0;   /* прижимаем к низу */
+  left: 0;
+  padding: 12px;
+}
+
+.popular .btn {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 15px;
+  text-decoration: none;
+  color: rgb(0, 0, 0);
+  border: 2px solid rgb(0, 0, 0);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.popular .btn:hover {
+  transform: scale(1.03); 
+}
+
+/*плашка берюзова*/
+
+.features {
+  width: 100%;                /* фон на всю ширину */
+  background: rgba(102, 146, 147, 1);
+  color: rgb(0, 0, 0);
+  padding: 40px 20px;
+}
+
+.features-inner {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* две колонки */
+  gap: 40px;
+  max-width: 1000px;           /* ограничиваем ширину контента */
+  margin: 0 auto;              /* центрируем по горизонтали */
+}
+
+
+.features1 {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+
+}
+
+.features-icons {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+}
+
+.features1 h2 {
+  color: rgba(195, 228, 227, 1);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  text-align: left;
+}
+
+.features1 p {
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 0;
+  text-align: left;
+}
+
+/* 2 банера*/
+.promo {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  width: 55%;
+  height: 350px;
+  margin: 0 auto; 
+  padding:  60px 20px;
+  border-radius: 8px;
+  margin-top: 40px;
+  overflow: hidden;
+}
+
+.promo::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* растягиваем на всю карточку */
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.promo--light {
+  background:url("../components/images/guides.jpg") no-repeat center/cover;
+ background-position: 50% 25%; /* смещение по X и Y */
+/* по центру */
+  background-size: cover;    
+}
+
+.promo--dark {
+  background:url("../components/images/tours.jpg") no-repeat center/cover;
+  margin-bottom: 40px; 
+}
+
+.promo-inner {
+  margin: 0 auto;
+  text-align: center;
+  z-index: 2;
+}
+
+.promo-inner h2 {
+  font-size: 28px;
+  color: rgba(241, 243, 248, 1);
+  margin-top: 15px;
+  margin-bottom: 50px;
+}
+
+.promo-inner p {
+  font-size: 18px;
+  color: rgba(241, 243, 248, 1);
+  margin-bottom: 55px;
+}
+
+.promo-inner .btn {
+  text-decoration: none;
+  padding: 10px 18px;
+  background-color: rgba(198, 194, 149, 1);
+  color: rgba(45, 75, 73, 1);
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.promo-inner .btn:hover {
+  background-color: rgb(167, 163, 116);
+}
+
+/*
+.guide {
+  padding: 40px;
+  text-align: center;
+}
+*/
+
+
+
+.dual-conversion {
+  background: rgba(124, 180, 151, 1); 
+  padding: 40px 15px; /* меньше отступ */
+}
+
+.conversion-inner {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px; /* меньше расстояние */
+  max-width: 55%; /* чуть шире, чтобы блоки не выглядели слишком узкими */
+  margin: 0 auto;
+}
+
+.conversion-block {
+  padding: 20px; /* меньше внутренний отступ */
+  border-radius: 20px; /* радиус скругления меньше */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /*gap: 15px;*/
+  color: rgba(32, 32, 32, 1);
+}
+
+.conversion--guide {
+  background: rgba(198, 228, 230, 1);
+}
+
+.conversion--social {
+  background: rgba(235, 250, 245, 1);
+}
+
+.conversion-block h2 {
+  font-size: 25px; /* меньше заголовок */
+  margin-bottom: 5px;
+}
+
+.conversion-block p {
+  font-size: 14px; /* меньше текст */
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.guide-form input {
+  padding: 8px; /* меньше отступ */
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 13px;
+  width: 70%;
+  margin-bottom: 10px;
+}
+
+.guide-form button {
+  padding: 10px 24px; /* компактнее кнопка */
+  background-color: rgba(102, 146, 147, 1);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: block; 
+  margin: 0 auto; 
+  margin-bottom: 6px;
+}
+
+.guide-form button:hover {
+  background-color: rgb(71, 103, 103);
+}
+
+.guide-form small {
+  display: block;
+  font-size: 11px; 
+  margin-bottom: 10px;
+  color: #44706d;
+}
+
+.social-icons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 250px;
+  margin: 0 auto;
+  padding: 5px;
+  border-radius: 15px;            /* скругление */
+  background-color: rgba(0, 0, 0, 0.05);         /* фон рамки */
+}
+
+.social-icons a {
+  display: flex;
+  justify-content: center;
+  width: 35px;
+}
+
+/* вот тута дальше */ 
+.conversion-block img {
+  width: 100%;
+  border-radius: 6px;
+  object-fit: cover;
+  max-height: 150px; /* меньше картинка */
+}
+
+
+/*адаптив*/
+@media (max-width: 1090px) {
+  .card {
+    grid-template-columns: repeat(3, 1fr); /* 5 карточек в ряд */
+  }
+  .hide-on-mobile {
+    display: none;
+  }
+  .features-inner {
+ /* две колонки */
+  gap: 30px;
+  max-width: 800px;           /* ограничиваем ширину контента */
+             /* центрируем по горизонтали */
+}
+  .features-icons {
+  width: 65px;
+  height: 65px;
+}
+.features1 h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.features1 p {
+  font-size: 14px;
+}
+.promo {
+  width: 60%;
+  height: 330px;
+}
+.conversion-inner {
+  max-width: 70%; 
+}
+.guide-form input {
+  width: 80%;
+}
+.conversion-block img {
+  height: 150px; /* меньше картинка */
+}
+}
+
+@media (max-width: 860px) {
+  .search-form {
+  width: 650px;
+}
+  .search-bar-banner {
+    max-width: 300px; 
+  }
+
+  .features-inner {
+  gap: 15px;
+}
+.promo {
+  width: 70%;
+  height: 310px;
+}
+  .promo-inner h2 {
+  margin-top: 10px;
+  margin-bottom: 45px;
+}
+
+.promo-inner p {
+  margin-bottom: 50px;
+}
+
+.dual-conversion {
+  padding: 20px 10px; /* меньше отступ */
+}
+
+.conversion-inner {
+  gap: 12px; /* меньше расстояние */
+  max-width: 70%;
+}
+
+.conversion-block {
+  padding: 10px; 
+}
+
+.conversion-block h2 {
+  font-size: 20px;
+}
+
+.conversion-block p {
+  font-size: 11px; /* меньше текст */
+  margin-bottom: 5px;
+}
+
+.guide-form input {
+  padding: 7px; /* меньше отступ */
+  font-size: 11px;
+  width: 80%;
+  margin-bottom: 7px;
+}
+
+.guide-form button {
+  padding: 8px; /* компактнее кнопка */
+  width: 80%;
+  font-size: 13px;
+}
+
+.guide-form small {
+  font-size: 9px; 
+  margin-bottom: 10px;
+}
+
+.social-icons {
+  gap: 7px;
+  width: 200px;
+  margin-bottom: 7px;
+}
+
+.social-icons a {
+  width: 30px;
+}
+}
+
+
+
+@media (max-width: 730px) {
+  .search-form {
+    flex-direction: column; 
+    width: 100%;
+  }
+  .search-bar-banner,
+  .date-input,
+  .search-form button {
+    width: 100%;
+    max-width: none; 
+  }
+  .search-icons {
+    display: none; 
+  }
+  .search-bar-banner input {
+  padding: 8px 12px; 
+  }
+  .popular {
+    padding: 20px ;
+  }
+  .popular h2 {
+    font-size: 25px;
+    margin-bottom: 20px;
+  }
+  .card {
+    width: 95%;
+    gap: 10px;
+    grid-template-columns: repeat(2, 1fr); /* 5 карточек в ряд */
+  }
+  .hide-on-mobile {
+    display: block;
+  }
+    .features-inner {
+  grid-template-columns: none; 
+  grid-template-rows: repeat(2, 1fr); 
+}
+
+
+  .conversion-inner {
+    grid-template-columns: 1fr; /* одна колонка вместо двух */
+    max-width: 60%;             /* можно чуть шире, чтобы блоки не выглядели узкими */
+    gap: 20px;                  /* расстояние между блоками по вертикали */
+  }
+
+  .conversion-block {
+    padding: 15px;              /* можно чуть увеличить внутренний отступ */
+  }
+
+  .conversion-block img {
+    max-height: 180px;          /* картинка может быть чуть выше на мобильных */
+  }
+}
+
+@media (max-width: 480px) {
+  .banner {
+  padding: 100px 20px 45px 20px; /**/
+}
+  .banner h1 {
+    font-size: 28px;
+  }
+  .banner p {
+    font-size: 15px;
+  }
+  .popular h2 {
+    font-size: 20px;
+  }
+  .card {
+
+  margin-bottom: 20px;
+  }
+  .city-card {
+    height: 110px;
+  }
+  .card-overlay {
+  font-size: 11px ;
+    padding: 8px;
+  }
+  .popular .btn {
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid rgb(0, 0, 0); /*надо смотреть на телефоне*/
+  }
+ .features {
+  padding:20px;
+  }
+  .features-icons {
+  width: 40px;
+  }
+  .features1 h2 {
+  font-size: 17px;
+  }
+  .features1 p {
+    font-size: 13px;
+  }
+  .promo {
+  width: 70%;
+  height: 250px;
+  padding:  15px;
+  margin-top: 25px;
+}
+.promo--dark {
+  background-position: 30% 50%; /*x y*/
+  margin-bottom: 30px; 
+}
+.promo-inner h2 {
+  font-size: 20px;
+  color: rgba(241, 243, 248, 1);
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+.promo-inner p {
+  font-size: 13px;
+  color: rgba(241, 243, 248, 1);
+  margin-bottom: 35px;
+}
+.promo-inner .btn {
+  text-decoration: none;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.promo-inner .btn:hover {
+  background-color: rgb(167, 163, 116);
+}
+.conversion-inner {
+
+  max-width: 85%; 
+
+}
+}
