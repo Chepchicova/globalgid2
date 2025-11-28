@@ -340,6 +340,29 @@
   margin-bottom: 10px;
 }
 
+/*поле номера телефона*/
+.guide-form .react-tel-input {
+  width: 70%;  
+  margin: 0 auto 10px;          
+  display: flex;       
+}
+
+.guide-form .react-tel-input .flag-dropdown {
+  border: 2px solid #ccc;
+  border-radius: 8px 0 0 8px;
+  background: #fff;
+}
+
+.guide-form .react-tel-input .form-control {
+  padding: 8px 0 8px 48px;
+  border: 2px solid #ccc;
+  border-left: none;   
+  border-radius: 8px;
+  font-size: 13px;
+    box-sizing: border-box;
+  width: 100%;
+}
+
 .guide-form button {
   padding: 10px 24px; /* компактнее кнопка */
   background-color: rgba(102, 146, 147, 1);
@@ -426,6 +449,11 @@
 .guide-form input {
   width: 80%;
 }
+
+.guide-form .react-tel-input {
+  width: 80%;       
+}
+
 .conversion-block img {
   height: 150px; /* меньше картинка */
 }
@@ -479,10 +507,24 @@
 
 .guide-form input {
   padding: 7px; /* меньше отступ */
-  font-size: 11px;
+  font-size: 12px;
   width: 80%;
   margin-bottom: 7px;
 }
+
+/*надо вставить адаптив для поля ввода телефона*/
+
+  .guide-form .react-tel-input {
+    width: 80%;             
+    margin: 0 auto 7px;     
+  }
+
+  .guide-form .react-tel-input .form-control {
+    padding: 7px 7px 7px 46px;           
+    font-size: 11px;
+    height: auto;         
+    line-height: 1.1;   
+  }
 
 .guide-form button {
   padding: 8px; /* компактнее кнопка */
@@ -632,8 +674,6 @@
   background-color: rgb(167, 163, 116);
 }
 .conversion-inner {
-
   max-width: 85%; 
-
 }
 }
