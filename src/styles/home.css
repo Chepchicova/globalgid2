@@ -62,7 +62,7 @@
 .search-icons {
   position: absolute;
   left: 12px; /* фиксируем иконку внутри поля слева */
-  top: 50%;
+  top: 50%; 
   transform: translateY(-50%);
   pointer-events: none; /* чтобы клик не мешал вводу */
 }
@@ -143,7 +143,7 @@
 
 .card-overlay {
   position: absolute;
-  bottom: 0;   /* прижимаем к низу */
+  bottom: 0;   
   left: 0;
   padding: 12px;
 }
@@ -167,7 +167,7 @@
 /*плашка берюзова*/
 
 .features {
-  width: 100%;                /* фон на всю ширину */
+  width: 100%;             
   background: rgba(102, 146, 147, 1);
   color: rgb(0, 0, 0);
   padding: 40px 20px;
@@ -175,10 +175,10 @@
 
 .features-inner {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* две колонки */
+  grid-template-columns: repeat(2, 1fr); 
   gap: 40px;
-  max-width: 1000px;           /* ограничиваем ширину контента */
-  margin: 0 auto;              /* центрируем по горизонтали */
+  max-width: 1000px;          
+  margin: 0 auto;              
 }
 
 
@@ -278,16 +278,8 @@
 .promo-inner .btn:hover {
   background-color: rgb(167, 163, 116);
 }
-
-/*
-.guide {
-  padding: 40px;
-  text-align: center;
-}
-*/
-
-
-
+ 
+/*две нижние формы*/
 .dual-conversion {
   background: rgba(124, 180, 151, 1); 
   padding: 40px 15px; /* меньше отступ */
@@ -395,8 +387,8 @@
   width: 250px;
   margin: 0 auto;
   padding: 5px;
-  border-radius: 15px;            /* скругление */
-  background-color: rgba(0, 0, 0, 0.05);         /* фон рамки */
+  border-radius: 15px;           
+  background-color: rgba(0, 0, 0, 0.05);        
 }
 
 .social-icons a {
@@ -410,23 +402,41 @@
   width: 100%;
   border-radius: 6px;
   object-fit: cover;
-  max-height: 150px; /* меньше картинка */
+  max-height: 150px; 
 }
 
+/*сообщения в форме */
+.form-message {
+  margin-top: 10px;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.form-message.success {
+  color: #2D4B4D; 
+  background-color: #7cb47c71; 
+  border: 1px solid #2D4B4D; 
+}
+
+.form-message.error {
+  color: #8c3937; 
+  background-color: #fbeaea; 
+  border: 1px solid #8c3937; 
+}
 
 /*адаптив*/
 @media (max-width: 1090px) {
   .card {
-    grid-template-columns: repeat(3, 1fr); /* 5 карточек в ряд */
+    grid-template-columns: repeat(3, 1fr); 
   }
   .hide-on-mobile {
     display: none;
   }
   .features-inner {
- /* две колонки */
   gap: 30px;
-  max-width: 800px;           /* ограничиваем ширину контента */
-             /* центрируем по горизонтали */
+  max-width: 800px;         
+             
 }
   .features-icons {
   width: 65px;
@@ -449,13 +459,11 @@
 .guide-form input {
   width: 80%;
 }
-
 .guide-form .react-tel-input {
   width: 80%;       
 }
-
 .conversion-block img {
-  height: 150px; /* меньше картинка */
+  height: 150px; 
 }
 }
 

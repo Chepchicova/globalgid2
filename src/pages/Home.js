@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/home.css";
 import spbImg from '../components/images/saint-petersburg.png';
 import kalinImg from '../components/images/kaliningrad.jpg';
@@ -12,10 +11,9 @@ import yerevanImg from '../components/images/yerevan.webp';
 import romeImg from '../components/images/rome.jpg';
 import guideFieldImg from '../components/images/guide_field.jpg';
 import viewImg from '../components/images/view.jpg';
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
-
-
+import React, { useState } from "react";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 export default function Home() {
 
@@ -33,6 +31,46 @@ export default function Home() {
     { name: "Ереван",  slug: "yerevan", image: yerevanImg },
     { name: "Рим",  slug: "rome", image: romeImg },
   ];
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (name.length < 2 || phone.length < 6) {
+    setMessage("Заявка не может быть отправлена: убедитесь, что данные введены верно");
+    setIsError(true); // ошибка
+    return;
+  }
+
+  const payload = { name, phone };
+
+  try {
+    const res = await fetch("/backend/api.php?method=createRequest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (data.status === "ok") {
+      setMessage("Заявка успешно отправлена. Ожидайте звонка от нашего менеджера");
+      setIsError(false); // успех
+      setName("");
+      setPhone("");
+    } else {
+      setMessage("Ошибка: " + data.message);
+      setIsError(true); // ошибка
+    }
+  } catch {
+    setMessage("Сервер недоступен");
+    setIsError(true); // ошибка
+  }
+};
 
   return (
     <main className="home">
@@ -147,24 +185,43 @@ export default function Home() {
           <div className="conversion-block conversion--guide">
             <h2>Хотите стать гидом GlobalGid?</h2>
             <p>Наш эксперт позвонит вам в течении 10 минут</p>
-<form className="guide-form">
-  <input type="text" placeholder="Имя" />
+  <form className="guide-form" onSubmit={handleSubmit}>
+<input
+  type="text"
+  placeholder="Имя"
+  value={name}
+  onChange={(e) => {
+    const val = e.target.value;
+    // убираем цифры
+    const onlyLetters = val.replace(/[0-9]/g, "");
+    // ограничиваем длину
+    if (onlyLetters.length <= 30) {
+      setName(onlyLetters);
+    }
+  }}
+  required
+/>
 
-  <PhoneInput
-    country={'by'}              // стартовая страна (Беларусь)
-    preferredCountries={['ru','by','ua']} // список "избранных"
-    inputProps={{
-      name: 'phone',
-      required: true,
-      autoFocus: true
-    }}
-  />
 
-  <button type="submit">Отправить заявку</button>
-  <small>
-    Нажимая кнопку «Отправить заявку», я даю свое согласие на обработку моих персональных данных.
-  </small>
-</form>
+      <PhoneInput
+        country={"by"}
+        preferredCountries={["ru", "by", "ua"]}
+        value={phone}
+        onChange={(value) => setPhone(value)}
+        inputProps={{ name: "phone", required: true }}
+      />
+
+      <button type="submit">Отправить заявку</button>
+      <small>
+        Нажимая кнопку «Отправить заявку», я даю свое согласие на обработку моих персональных данных.
+      </small>
+
+      {message && (
+        <p className={`form-message ${isError ? "error" : "success"}`}>
+          {message}
+        </p>
+      )}
+    </form>
 
             <img src={guideFieldImg} alt="Гиды в поле" />
           </div>
