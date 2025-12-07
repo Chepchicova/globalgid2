@@ -397,21 +397,31 @@ const FiltersPanel = ({
 
 // ==================== КОМПОНЕНТ СПИСКА ЭКСКУРСИЙ ====================
 const ExcursionList = ({ excursionCards, sort, onSortChange }) => {
-  console.log(excursionCards,"afdsgfdgfjhgkj")
+
+    // ✅ создаём отсортированную копию массива
+const sortedCards = React.useMemo(() => {
+  return [...excursionCards].sort((a, b) => {
+    if (sort === "price_desc") return b.price - a.price;     // дороже → дешевле
+    if (sort === "price_asc") return a.price - b.price;      // дешевле → дороже
+    if (sort === "duration") return a.duration - b.duration; // короче → длиннее
+    return 0;
+  });
+}, [excursionCards, sort]);
+
   return (
     <section className="excursion-results">
       <div className="results-header">
         <p>Найдено: {excursionCards.length} экскурсии</p>
-        <select value={sort} onChange={(e) => onSortChange(e.target.value)}>
-          <option value="date">По дате</option>
-          <option value="price">По цене</option>
-          <option value="duration">По длительности</option>
-        </select>
+<select value={sort} onChange={(e) => onSortChange(e.target.value)}>
+  <option value="price_asc">Сначала дешевле</option>
+  <option value="price_desc">Сначала дороже</option>
+  <option value="duration">По длительности</option>
+</select>
+
       </div>
 
       <div className="excursion-list">
-        {excursionCards.map((ex) => (
-          
+        {sortedCards.map((ex) => (
           <ExcursionCard key={ex.excursion_id} excursion={ex} />
         ))}
       </div>
@@ -438,7 +448,9 @@ const ExcursionsPage = () => {
   const [selectedLanguages, setSelectedLanguages] = useState([]);
 
   // Данные для фильтров
-  const [excursionCards, setExcursionCards] = useState([1,2,3,4]);
+  const [excursionCards, setExcursionCards] = useState([]);
+
+  //const [excursionCards, setExcursionCards] = useState([1,2,3,4]);
 const [priceRange, setPriceRange] = useState({ min_price: null, max_price: null });
 const [durationRange, setDurationRange] = useState({ min_duration: null,max_duration: null });//
   const [languages, setLanguages] = useState([]);
@@ -519,8 +531,6 @@ useEffect(() => {
         const res = await fetch(`${API_BASE}?method=getExcursionCards`);
         const data = await res.json();
         setExcursionCards(data);
-        console.log(data,'afsdg')
-        console.log(excursionTypes,'afsdg')
       } catch (err) {
         console.error("Ошибка загрузки карточек:", err);
       }
