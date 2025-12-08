@@ -116,8 +116,6 @@ const end = formatDate(dateRange[0].endDate);
 });
 navigate(`/excursions?${query}`);
 
-
-    navigate(`/excursions?${query}`);
   };
 
   return (
@@ -391,3 +389,4 @@ navigate(`/excursions?${query}`);
     </main>
   );
 }
+ //////// //// // до

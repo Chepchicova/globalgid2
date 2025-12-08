@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/pages/Excursions.js
+import React, { useState, useEffect, useCallback } from "react";
 import cardImg from '../components/images/card.jpg';
 import { DateRange } from "react-date-range";
 import { useLocation } from "react-router-dom";
@@ -8,6 +9,21 @@ import { ru } from "date-fns/locale";
 import "../styles/excursions.css";
 
 const API_BASE = "http://localhost/globalgid/public/backend/api.php";
+
+// Функции для работы с датами
+const formatDateForAPI = (date) => {
+  if (!date) return null;
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateFromQuery = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
 
 // ==================== КОМПОНЕНТ КНОПКИ-ПЕРЕКЛЮЧАТЕЛЯ ====================
 const FilterToggle = ({ title, isOpen, onClick }) => {
@@ -72,7 +88,7 @@ const CheckboxFilterGroup = ({
 };
 
 // ==================== КОМПОНЕНТ ИНЛАЙНОВОГО ПОЛЯ ====================
-const InlineField = ({ label, placeholder, type = "number", min, max,fun,typeV}) => {
+const InlineField = ({ label, placeholder, type = "number", min, max, fun, typeV}) => {
  
   return (
     <div className="inline-field">
@@ -81,7 +97,7 @@ const InlineField = ({ label, placeholder, type = "number", min, max,fun,typeV})
         type={type} 
         min={min} 
         max={max} 
-        onChange={(e) => fun(typeV,e.target.value)}// вызов
+        onChange={(e) => fun(typeV, e.target.value)}
         placeholder={placeholder} 
         className="input" 
       />
@@ -91,7 +107,6 @@ const InlineField = ({ label, placeholder, type = "number", min, max,fun,typeV})
 
 // ==================== КОМПОНЕНТ КАРТОЧКИ ЭКСКУРСИИ ====================
 const ExcursionCard = ({ excursion }) => {
-  console.log(excursion,"asf23454")
   return (
     <div 
       className="excursion-card" 
@@ -152,14 +167,14 @@ const Banner = ({ searchQuery, onSearchChange, dateRange, setDateRange, onSearch
       <form className="search-form" onSubmit={handleSubmit}>
         {/* Поле поиска локации */}
         <div className="search-bar-banner">
-                            <svg
-                  className="search-icons"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.7321 10.3182H10.9907L10.7279 10.065C11.8541 8.7518 12.436 6.96032 12.1169 5.05624C11.6758 2.44869 9.4984 0.366386 6.87055 0.0474864C2.90061 -0.440264 -0.440517 2.89891 0.0475131 6.86652C0.366613 9.4928 2.45012 11.6689 5.05921 12.1098C6.9644 12.4287 8.757 11.8471 10.0709 10.7216L10.3243 10.9842V11.7252L14.313 15.7116C14.6978 16.0961 15.3266 16.0961 15.7114 15.7116C16.0962 15.327 16.0962 14.6986 15.7114 14.314L11.7321 10.3182ZM6.10096 10.3182C3.76405 10.3182 1.87763 8.4329 1.87763 6.09739C1.87763 3.76184 3.76405 1.87653 6.10096 1.87653C8.4379 1.87653 10.3243 3.76184 10.3243 6.09739C10.3243 8.4329 8.4379 10.3182 6.10096 10.3182Z" fill="#202020"/>
+          <svg
+            className="search-icons"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.7321 10.3182H10.9907L10.7279 10.065C11.8541 8.7518 12.436 6.96032 12.1169 5.05624C11.6758 2.44869 9.4984 0.366386 6.87055 0.0474864C2.90061 -0.440264 -0.440517 2.89891 0.0475131 6.86652C0.366613 9.4928 2.45012 11.6689 5.05921 12.1098C6.9644 12.4287 8.757 11.8471 10.0709 10.7216L10.3243 10.9842V11.7252L14.313 15.7116C14.6978 16.0961 15.3266 16.0961 15.7114 15.7116C16.0962 15.327 16.0962 14.6986 15.7114 14.314L11.7321 10.3182ZM6.10096 10.3182C3.76405 10.3182 1.87763 8.4329 1.87763 6.09739C1.87763 3.76184 3.76405 1.87653 6.10096 1.87653C8.4379 1.87653 10.3243 3.76184 10.3243 6.09739C10.3243 8.4329 8.4379 10.3182 6.10096 10.3182Z" fill="#202020"/>
             </svg>
           <input
             type="text"
@@ -400,23 +415,27 @@ const ExcursionList = ({ excursionCards, sort, onSortChange }) => {
 
     // ✅ создаём отсортированную копию массива
 const sortedCards = React.useMemo(() => {
+  if (!sort) return excursionCards; // ✅ ничего не сортируем
+
   return [...excursionCards].sort((a, b) => {
-    if (sort === "price_desc") return b.price - a.price;     // дороже → дешевле
-    if (sort === "price_asc") return a.price - b.price;      // дешевле → дороже
-    if (sort === "duration") return a.duration - b.duration; // короче → длиннее
+    if (sort === "price_asc") return a.price - b.price;
+    if (sort === "price_desc") return b.price - a.price;
+    if (sort === "duration") return a.duration - b.duration;
     return 0;
   });
 }, [excursionCards, sort]);
+
 
   return (
     <section className="excursion-results">
       <div className="results-header">
         <p>Найдено: {excursionCards.length} экскурсии</p>
-<select value={sort} onChange={(e) => onSortChange(e.target.value)}>
-  <option value="price_asc">Сначала дешевле</option>
-  <option value="price_desc">Сначала дороже</option>
-  <option value="duration">По длительности</option>
-</select>
+      <select value={sort} onChange={(e) => onSortChange(e.target.value)}>
+        <option value="">Не выбрано</option>
+        <option value="price_desc">Сначала дороже</option>
+        <option value="price_asc">Сначала дешевле</option>
+        <option value="duration">По длительности</option>
+      </select>
 
       </div>
 
@@ -432,13 +451,13 @@ const sortedCards = React.useMemo(() => {
 // ==================== ГЛАВНЫЙ КОМПОНЕНТ ====================
 const ExcursionsPage = () => {
   // Состояния для фильтров
-  const [sort, setSort] = useState("date");
+  const [sort, setSort] = useState("");
   const [showTypeList, setShowTypeList] = useState(false);
   const [showTransportList, setShowTransportList] = useState(false);
   const [showSpecializationsList, setShowSpecializationsList] = useState(false);
   const [showActivityList, setShowActivityList] = useState(false);
   const [showLanguageList, setShowLanguageList] = useState(false);
-  const [withChildren, setWithChildren] = useState(false);//дети
+  const [withChildren, setWithChildren] = useState(false);
 
   // Выбранные значения фильтров
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -449,10 +468,8 @@ const ExcursionsPage = () => {
 
   // Данные для фильтров
   const [excursionCards, setExcursionCards] = useState([]);
-
-  //const [excursionCards, setExcursionCards] = useState([1,2,3,4]);
-const [priceRange, setPriceRange] = useState({ min_price: null, max_price: null });
-const [durationRange, setDurationRange] = useState({ min_duration: null,max_duration: null });//
+  const [priceRange, setPriceRange] = useState({ min_price: null, max_price: null });
+  const [durationRange, setDurationRange] = useState({ min_duration: null, max_duration: null });
   const [languages, setLanguages] = useState([]);
   const [specializations, setSpecializations] = useState([]);
   const [excursionTypes, setExcursionTypes] = useState([]);
@@ -461,184 +478,228 @@ const [durationRange, setDurationRange] = useState({ min_duration: null,max_dura
 
   //поисковик
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchDate, setSearchDate] = useState("");// мб не надо
-const [dateRange, setDateRange] = useState([
-  {
-    startDate: null,
-    endDate: null,
-    key: 'selection'
-  }
-]);
+  const [dateRange, setDateRange] = useState([
+    {
+      startDate: null,
+      endDate: null,
+      key: 'selection'
+    }
+  ]);
 
-const parseLocalDate = (str) => {
-  if (!str) return null;
-  const [year, month, day] = str.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
-
-  // ✅ импортируем параметры из URL
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
 
-  const initialLocation = params.get("location") || "";
-  const initialStart = params.get("start") || null;
-  const initialEnd = params.get("end") || null;
+  // ✅ 1. Чтение параметров из URL при первом рендере
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const initialLocation = params.get("location") || "";
+    const initialStart = params.get("start");
+    const initialEnd = params.get("end");
 
-    //читаем параме и применяем фильтры
-useEffect(() => {
-  if (initialLocation) setSearchQuery(initialLocation);
+    console.log("📥 Получены параметры из URL:", {
+      initialLocation,
+      initialStart,
+      initialEnd,
+      hasLocationParam: params.has("location"),
+      hasStartParam: params.has("start"),
+      hasEndParam: params.has("end")
+    });
 
-  if (initialStart || initialEnd) {
-    setDateRange([
-      {
-        startDate: initialStart ? parseLocalDate(initialStart) : null,
-        endDate: initialEnd ? parseLocalDate(initialEnd) : null,
-        key: "selection"
+    // Устанавливаем значения из URL
+    if (initialLocation) {
+      setSearchQuery(initialLocation);
+    }
+
+    if (initialStart || initialEnd) {
+      setDateRange([
+        {
+          startDate: parseDateFromQuery(initialStart),
+          endDate: parseDateFromQuery(initialEnd),
+          key: "selection"
+        }
+      ]);
+    }
+    
+    // После установки значений из URL снимаем флаг начальной загрузки
+    setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 100);
+  }, [location.search]);
+
+  // ✅ 2. Применение фильтров при изменении searchQuery или dateRange (НО НЕ при начальной загрузке)
+  useEffect(() => {
+    // Если это начальная загрузка - не применяем фильтры автоматически
+    if (isInitialLoad) return;
+    
+    const hasSearchParams = searchQuery.trim() !== "" || dateRange[0].startDate || dateRange[0].endDate;
+    
+    if (hasSearchParams) {
+      console.log("🔍 Автоматическое применение фильтров (не начальная загрузка):", {
+        searchQuery,
+        dateRange
+      });
+      
+      const timer = setTimeout(() => {
+        applyFilters();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    } else {
+      // Если параметры поиска пустые - загружаем ВСЕ экскурсии
+      console.log("🔄 Нет параметров поиска, загружаю все экскурсии...");
+      loadAllExcursions();
+    }
+  }, [searchQuery, dateRange, isInitialLoad]);
+
+  // ✅ 3. Функция для загрузки ВСЕХ экскурсий
+  const loadAllExcursions = useCallback(async () => {
+    try {
+      console.log("🔄 Загрузка ВСЕХ экскурсий...");
+      const cardsRes = await fetch(`${API_BASE}?method=getExcursionCards`);
+      const cardsData = await cardsRes.json();
+      setExcursionCards(cardsData);
+      console.log("✅ Загружены все экскурсии:", cardsData.length);
+    } catch (err) {
+      console.error("❌ Ошибка загрузки всех экскурсий:", err);
+    }
+  }, []);
+
+  // ✅ 4. Загрузка данных для фильтров при монтировании
+  useEffect(() => {
+    const loadFilterData = async () => {
+      try {
+        console.log("📊 Загрузка данных для фильтров...");
+        
+        const [priceRes, langRes, specRes, typeRes, transportRes, activityRes] = 
+          await Promise.all([
+            fetch(`${API_BASE}?method=getPriceRange`),
+            fetch(`${API_BASE}?method=getLanguages`),
+            fetch(`${API_BASE}?method=getSpecializations`),
+            fetch(`${API_BASE}?method=getExcursionTypes`),
+            fetch(`${API_BASE}?method=getTransportTypes`),
+            fetch(`${API_BASE}?method=getActivities`)
+          ]);
+          
+        setPriceRange(await priceRes.json());
+        setLanguages(await langRes.json());
+        setSpecializations(await specRes.json());
+        setExcursionTypes(await typeRes.json());
+        setTransportTypes(await transportRes.json());
+        setActivities(await activityRes.json());
+        
+        console.log("✅ Данные фильтров загружены");
+      } catch (err) {
+        console.error("❌ Ошибка загрузки данных фильтров:", err);
       }
-    ]); 
-  }
-}, []); 
-
-useEffect(() => {
-  const hasLocation = searchQuery.trim() !== "";
-  const hasStart = !!dateRange[0].startDate;
-  const hasEnd = !!dateRange[0].endDate;
-
-  if (hasLocation || hasStart || hasEnd) {
-    applyFilters();
-  }
-}, [searchQuery, dateRange]);
-
-  console.log("URL params:", { initialLocation, initialStart, initialEnd });
-
-
-    const formatLocalDate = (d) =>
-        d
-            ? new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-                  .toISOString()
-                  .split("T")[0]
-            : null;
+    };
+    
+    loadFilterData();
+    
+    // При первоначальной загрузке, если нет параметров в URL - загружаем все экскурсии
+    const params = new URLSearchParams(location.search);
+    const hasUrlParams = params.has("location") || params.has("start") || params.has("end");
+    
+    if (!hasUrlParams) {
+      console.log("🚀 Нет параметров в URL, загружаю все экскурсии при монтировании");
+      loadAllExcursions();
+    }
+  }, [location.search, loadAllExcursions]);
 
   // Вспомогательная функция для переключения выбора
   const toggleSelection = (setter, selected, value) => {
     setter(selected.includes(value) ? selected.filter(v => v !== value) : [...selected, value]);
   };
 
-  // Загрузка карточек экскурсий
-  useEffect(() => {
-    const loadExcursionCards = async () => {
-      try {
-        const res = await fetch(`${API_BASE}?method=getExcursionCards`);
-        const data = await res.json();
-        setExcursionCards(data);
-      } catch (err) {
-        console.error("Ошибка загрузки карточек:", err);
-      }
-    };
-    loadExcursionCards();
-  }, []);
-
-  // Загрузка данных для фильтров
-  useEffect(() => {
-    const loadData = async (method, setter) => {
-      try {
-        const res = await fetch(`${API_BASE}?method=${method}${method === "getExcursions" ? `&sort=${sort}` : ""}`);
-        const data = await res.json();
-        setter(data);
-          console.log(data)
-      } catch (err) {
-        console.error(`Ошибка загрузки ${method}:`, err);
-      }
-    };
-
-    loadData("getPriceRange", setPriceRange);
-    loadData("getLanguages", setLanguages);
-    loadData("getSpecializations", setSpecializations);
-    loadData("getExcursionTypes", setExcursionTypes);
-    loadData("getTransportTypes", setTransportTypes);
-    loadData("getActivities", setActivities);
-  
-  }, [sort]);
-
-// Применение фильтров
-const applyFilters = async () => {
-  const start = dateRange[0].startDate;
-  const end = dateRange[0].endDate;
-
-  const filters = {
-    types: selectedTypes,
-    transport: selectedTransport,
-    specializations: selectedSpecializations,
-    activities: selectedActivities,
-    languages: selectedLanguages,
-    minPrice: priceRange.min_price,
-    maxPrice: priceRange.max_price,
-    minDuration: durationRange.min_duration,
-    maxDuration: durationRange.max_duration,
-    withChildren: withChildren ? 1 : null,
-
-    // ✅ Поиск по локации
-    locationQuery: searchQuery.trim() !== "" ? searchQuery.trim() : null,
-
-    // ❌ УДАЛЕНО: dateQuery (его больше нет)
-    // dateQuery: searchDate.trim() !== "" ? searchDate.trim() : null,
-
-    // ✅ Даты из календаря
-    dateStart: formatLocalDate(start),
-    dateEnd: formatLocalDate(end),
+  const changePrice = (type, value) => {
+    setPriceRange(prev => ({
+      ...prev,
+      [type]: value
+    }));
   };
 
-  try {
-    const res = await fetch(`${API_BASE}?method=getExcursionsFiltered`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(filters),
+  const changeDuration = (type, value) => {
+    setDurationRange(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
+  // Основная функция применения фильтров
+  const applyFilters = useCallback(async () => {
+    console.log("🚀 Вызов applyFilters с параметрами:", {
+      searchQuery,
+      dateRange,
+      isInitialLoad
     });
 
-    const result = await res.json();
+    const start = dateRange[0].startDate;
+    const end = dateRange[0].endDate;
 
-    if (result.success) {
-      setExcursionCards(result.data);
-      console.log("Успешно загружено:", result.total, "экскурсий");
-      console.log("Полученные фильтры сервером:", result.filters_received);
-    } else {
-      console.error("Ошибка сервера:", result.error);
+    const filters = {
+      types: selectedTypes,
+      transport: selectedTransport,
+      specializations: selectedSpecializations,
+      activities: selectedActivities,
+      languages: selectedLanguages,
+      minPrice: priceRange.min_price && priceRange.min_price !== "" ? priceRange.min_price : null,
+      maxPrice: priceRange.max_price && priceRange.max_price !== "" ? priceRange.max_price : null,
+      minDuration: durationRange.min_duration && durationRange.min_duration !== "" ? durationRange.min_duration : null,
+      maxDuration: durationRange.max_duration && durationRange.max_duration !== "" ? durationRange.max_duration : null,
+      withChildren: withChildren ? 1 : null,
+      locationQuery: searchQuery.trim() !== "" ? searchQuery.trim() : null,
+      dateStart: formatDateForAPI(start),
+      dateEnd: formatDateForAPI(end),
+    };
+
+    console.log("📤 Отправляемые фильтры на сервер:", filters);
+
+    try {
+      const res = await fetch(`${API_BASE}?method=getExcursionsFiltered`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(filters),
+      });
+
+      const result = await res.json();
+      console.log("📥 Ответ от сервера:", result);
+
+      if (result.success) {
+        setExcursionCards(result.data);
+        console.log("✅ Успешно загружено:", result.total, "экскурсий");
+      } else {
+        console.error("❌ Ошибка сервера:", result.error);
+      }
+    } catch (err) {
+      console.error("❌ Ошибка применения фильтров:", err);
     }
+  }, [
+    selectedTypes,
+    selectedTransport,
+    selectedSpecializations,
+    selectedActivities,
+    selectedLanguages,
+    priceRange,
+    durationRange,
+    withChildren,
+    searchQuery,
+    dateRange
+  ]);
 
-  } catch (err) {
-    console.error("Ошибка применения фильтров:", err);
-  }
-};
+  // Обработчик поиска из баннера
+  const handleBannerSearch = () => {
+    console.log("🎯 Ручной поиск из баннера");
+    applyFilters();
+  };
 
-function changePrice(type,value){
-  setPriceRange(prev => ({
-  ...prev, // Копируем все предыдущие значения
-  [type]: value // Динамически обновляем нужное поле
-}));
-
-}
-//по аналогии для длительности
-function changeDuration(type, value) {
-  setDurationRange(prev => ({
-    ...prev,
-    [type]: value
-  }));
-}
-
-
-useEffect(()=>{
-  console.log(priceRange.max_price,'asfgdsdhjf3465678')
-},[priceRange.max_price])
   return (
     <div className="excursions-page">
-<Banner
-  searchQuery={searchQuery}
-  onSearchChange={setSearchQuery}
-  dateRange={dateRange}
-  setDateRange={setDateRange}
-  onSearchSubmit={applyFilters}
-/>
-
+      <Banner
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        onSearchSubmit={handleBannerSearch}
+      />
       
       <section className="excursions-content">
         <FiltersPanel
@@ -648,8 +709,8 @@ useEffect(()=>{
           activities={activities}
           languages={languages}
           priceRange={priceRange}
-          durationRange={durationRange} //
-          withChildren={withChildren} //дети
+          durationRange={durationRange}
+          withChildren={withChildren}
           selectedTypes={selectedTypes}
           selectedTransport={selectedTransport}
           selectedSpecializations={selectedSpecializations}
@@ -657,7 +718,7 @@ useEffect(()=>{
           selectedLanguages={selectedLanguages}
           onToggleType={(value) => toggleSelection(setSelectedTypes, selectedTypes, value)}
           onToggleTransport={(value) => toggleSelection(setSelectedTransport, selectedTransport, value)}
-          onToggleSpecializations={(value) => toggleSelection(setSelectedSpecializations, selectedSpecializations, value)} //хз
+          onToggleSpecializations={(value) => toggleSelection(setSelectedSpecializations, selectedSpecializations, value)}
           onToggleActivity={(value) => toggleSelection(setSelectedActivities, selectedActivities, value)}
           onToggleLanguage={(value) => toggleSelection(setSelectedLanguages, selectedLanguages, value)}
           showTypeList={showTypeList}
@@ -672,8 +733,8 @@ useEffect(()=>{
           onToggleLanguageList={() => setShowLanguageList(!showLanguageList)}
           onApplyFilters={applyFilters}
           changePrice={changePrice}
-          changeDuration={changeDuration} //
-          setWithChildren={setWithChildren} // дети
+          changeDuration={changeDuration}
+          setWithChildren={setWithChildren}
         />
         
         <ExcursionList

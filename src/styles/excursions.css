@@ -360,6 +360,47 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+.excursion-results .results-header select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 10px 40px 10px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);  
+}
+
+/* Состояние при наведении */
+.excursion-results .results-header select:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Состояние при фокусе */
+.excursion-results .results-header select:focus {
+  outline: none;
+  border-color: #3bb42b;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Кастомная стрелка */
+.excursion-results .results-header {
+  position: relative;
+}
+
+.excursion-results .results-header::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+/* Стиль при активном выборе (для первого option с пустым значением) */
+.excursion-results .results-header select option[value=""] {
+  color: #9ca3af;
+}
 
 /*карточки экскурсий*/
 .excursion-results {
@@ -458,6 +499,24 @@ input[type="number"]::-webkit-outer-spin-button {
   font-size: 14px;
   font-weight: 600;
   margin-top: 8px;
+}
+
+/* Стили для блока с датой в карточке */
+.excursion-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+/* Обновить существующие стили */
+.excursion-info {
+  padding: 15px;
+}
+
+.excursion-description {
+  margin: 10px 0;
 }
 
 .price .current {

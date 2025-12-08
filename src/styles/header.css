@@ -166,12 +166,199 @@
   transform: rotate(-45deg);
   background: #fff;
 }
+/*новое*/
+/* Добавить в src/styles/header.css */
+.user-menu {
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.logout-btn {
+  /*padding: 8px 16px;*/
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.logout-btn:hover {
+  background: #e5e5e5;
+  color: #333;
+}
+/* ===== ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ПРОФИЛЯ ===== */
+
+/* Контейнер профиля - фиксированная высота */
+.user-profile-container {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* Кнопка профиля - компактная, убираем дефолтные стрелки */
+.user-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1.5px solid #e0e0e0;
+  padding: 6px 12px;
+  border-radius: 24px;
+  cursor: pointer;
+  height: 40px;
+}
+
+.user-profile-btn:hover {
+  border-color: #3E845C;
+  box-shadow: 0 4px 10px rgba(62, 132, 92, 0.142);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #3E845C 0%, #204934 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #2d3748;
+  font-size: 13px;
+  /*white-space: nowrap;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;*/
+}
+
+/* Стрелка SVG */
+.dropdown-arrow {
+  transition: transform 0.2s ease;
+  width: 12px;
+  height: 12px;
+  color: #718096;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+  color: #3E845C;
+}
+
+/* ===== ВЫПАДАЮЩЕЕ МЕНЮ (БЕЗ ШАПКИ) ===== */
+
+/* Само меню - оптимальная ширина для контента */
+.user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 
+              0 3px 6px rgba(0, 0, 0, 0.05);
+  min-width: 200px; /* Минимальная ширина */
+  width: max-content; /* Ширина по контенту */
+  max-width: 240px; /* Максимальная ширина */
+  z-index: 900;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  animation: menuAppear 0.2s ease;
+  transform-origin: top right;
+}
+
+@keyframes menuAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Пункты меню - занимают всю ширину */
+.user-menu-items {
+  padding: 8px 0;
+  width: 100%;
+}
+
+.user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  color: #4a5568;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  border: none;
+  background: none;
+  width: 100%; /* Занимает всю ширину */
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box; /* Важно для правильного расчета ширины */
+}
+
+.user-menu-item:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+  color: #2d3748;
+}
+
+.user-menu-item svg {
+  opacity: 0.7;
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* Разделитель - на всю ширину */
+.user-menu-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 6px 0;
+  width: 100%;
+}
+
+/* Кнопка выхода */
+.user-menu-item.logout {
+  color: #e53e3e;
+  font-weight: 500;
+}
+
+.user-menu-item.logout:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+  color: #c53030;
+}
+
+.user-menu-item.logout svg {
+  color: #e53e3e;
+}
 
 /*медиа для поисковой строки*/
 @media (max-width: 1140px) {
   .search-bar {
     max-width: 300px; /* можно задать меньшее ограничение */
   }
+  /* Навигация справа */
+.nav-button {
+  gap: 0px;
+}
 }
 
 @media (max-width: 995px) {
@@ -229,6 +416,24 @@
   /* показываем меню, когда чекбокс активен */
   .burger-checkbox:checked ~ .nav-button .nav-links {
     transform: translateX(0);
+  }
+
+    .user-name {
+    display: none;
+  }
+  
+  .user-profile-btn {
+    padding: 6px 8px;
+  }
+  
+  .user-menu {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    left: 16px;
+    min-width: auto;
+    width: auto;
+    max-width: none;
   }
 }
 

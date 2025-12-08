@@ -131,7 +131,6 @@ function getExcursionsFiltered() {
     error_log("Принятые фильтры: " . print_r($input, true));
     error_log('INPUT: ' . print_r($input, true));
 
-
     //поиск
     // ===================== ФИЛЬТР ПО ЛОКАЦИИ (ПОИСКОВИК) =====================
 $locationQuery = isset($input['locationQuery']) ? trim($input['locationQuery']) : null;
@@ -165,7 +164,6 @@ if (!empty($locationQuery)) {
         return;
     }
 }
-
 
     $sql = "
         SELECT 
@@ -204,9 +202,6 @@ if ($start && $end) {
     $params[] = $start;
     $params[] = $endInclusive;
 }
-
-
-
 
     // 1. Фильтр по типу
     if (!empty($input['types'])) {
@@ -382,4 +377,4 @@ if (isset($input['maxDuration']) && $input['maxDuration'] !== '') {
         ];
         echo json_encode($response, JSON_UNESCAPED_UNICODE);
     }
-}
+} 
