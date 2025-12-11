@@ -2,16 +2,19 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Home from "./pages/Home";
 import Excursions from "./pages/Excursions";
+import ExcursionDetail from "./pages/excursionDetail"; // ИМПОРТ ДЕТАЛЬНОЙ СТРАНИЦЫ
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Profile from "./pages/Profile";
+import AdminExcursions from "./pages/AdminExcursions";
+import AdminExcursionForm from "./pages/AdminExcursionForm";
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Базовый URL для API
-  const API_BASE = "http://localhost/globalgid/public";
+  const API_BASE = "http://localhost/globalgid2/public";
 
   useEffect(() => {
     console.log("App component mounted, checking auth...");
@@ -115,10 +118,17 @@ return (
             path="/profile" 
             element={
               <Profile 
-                onLogout={handleLogout} // ✅ Передаем функцию выхода
+                onLogout={handleLogout} // Передаем функцию выхода
               />
             } 
           />
+          {/* НОВЫЙ МАРШРУТ ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ЭКСКУРСИИ */}
+          <Route path="/excursion/:id" element={<ExcursionDetail user={user} />} />
+          
+          {/* Администраторские маршруты */}
+          <Route path="/admin/excursions" element={<AdminExcursions user={user} />} />
+          <Route path="/admin/excursions/create" element={<AdminExcursionForm user={user} />} />
+          <Route path="/admin/excursions/edit/:id" element={<AdminExcursionForm user={user} />} />
         </Routes>
       </main>
       <Footer />

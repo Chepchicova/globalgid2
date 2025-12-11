@@ -73,7 +73,7 @@ const handleLoginSuccess = (userData) => {
           </a>
         </div>
 
-        {!isExcursionsPage && (
+        {!isExcursionsPage && user?.role !== 'admin' && (
           <div className="search-bar">
             <svg
               className="search-icon"
@@ -105,6 +105,12 @@ const handleLoginSuccess = (userData) => {
               <li><a href="/about" className="menu-item">О проекте</a></li>
               <li><a href="/help" className="menu-item">Помощь</a></li>
               <li><a href="/contacts" className="menu-item">Контакты</a></li>
+              {user?.role === 'admin' && (
+                <>
+                  <li><a href="/admin/excursions" className="menu-item">Экскурсии</a></li>
+                  <li><a href="/admin/guides" className="menu-item">Гиды</a></li>
+                </>
+              )}
             </ul> 
             
            {/* <a href="/favorites" className="nav-icon-link" aria-label="Избранное">

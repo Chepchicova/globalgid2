@@ -51,6 +51,42 @@ switch ($method) {
         getExcursionsFiltered(); // отфильтрованные
         break;
 
+    // Администраторские методы
+    case 'getAdminExcursions':
+        getAdminExcursions();
+        break;
+    
+    case 'getAdminExcursion':
+        if (!isset($_GET['id'])) {
+            echo json_encode(['success' => false, 'error' => 'ID не указан']);
+            break;
+        }
+        getAdminExcursion((int)$_GET['id']);
+        break;
+    
+    case 'updateAdminExcursion':
+        updateAdminExcursion();
+        break;
+    
+    case 'createAdminExcursion':
+        createAdminExcursion();
+        break;
+    
+    case 'deleteAdminExcursion':
+        deleteAdminExcursion();
+        break;
+    
+    case 'toggleAdminExcursionStatus':
+        toggleAdminExcursionStatus();
+        break;
+    
+    case 'getAdminGuides':
+        getAdminGuides();
+        break;
+    
+    case 'getAdminLocations':
+        getAdminLocations();
+        break;
 
     default:
         echo json_encode(['status' => 'unknown_method']);

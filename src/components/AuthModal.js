@@ -15,7 +15,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [success, setSuccess] = useState("");
 
   // Базовый URL для API
-  const API_BASE = "http://localhost/globalgid/public";
+  const API_BASE = "http://localhost/globalgid2/public";
 
   useEffect(() => {
     if (isOpen) {
@@ -104,7 +104,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           onLoginSuccess(data.user);
         }
         
-        // Показываем сообщение об успехе
+        // сообщение об успехе
         setSuccess(data.message || (isLogin ? "Вход выполнен успешно!" : "Регистрация успешна!"));
         
         // Очищаем форму
@@ -116,7 +116,7 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
           confirmPassword: ""
         });
         
-        // НЕ закрываем модалку автоматически!
+        // НЕ закрываем модалку автоматически
         
       } else {
         console.log("Ошибка от сервера:", data);
@@ -173,9 +173,6 @@ const AuthModal = ({ isOpen, onClose, onLoginSuccess }) => {
         {success && (
           <div className="success-message">
             {success}
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-              Вы можете закрыть это окно
-            </div>
           </div>
         )}
 

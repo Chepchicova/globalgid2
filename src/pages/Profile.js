@@ -8,7 +8,7 @@ export default function Profile({ onLogout }) {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const API_BASE = "http://localhost/globalgid/public";
+    const API_BASE = "http://localhost/globalgid2/public";
 
     useEffect(() => {
         loadProfile();
@@ -158,7 +158,7 @@ export default function Profile({ onLogout }) {
                         <span className="pg-menu-label">Мои бронирования</span>
                     </button>
                     
-                    {/*<button 
+                    {/*<button настройки в профиле
                         className={`pg-menu-item ${activeTab === 'settings' ? 'pg-active' : ''}`}
                         onClick={() => setActiveTab('settings')}
                     >

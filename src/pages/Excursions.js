@@ -3,12 +3,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import cardImg from '../components/images/card.jpg';
 import { DateRange } from "react-date-range";
 import { useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import { ru } from "date-fns/locale";
 import "../styles/excursions.css";
 
-const API_BASE = "http://localhost/globalgid/public/backend/api.php";
+const API_BASE = "http://localhost/globalgid2/public/backend/api.php";
 
 // Функции для работы с датами
 const formatDateForAPI = (date) => {
@@ -108,34 +109,40 @@ const InlineField = ({ label, placeholder, type = "number", min, max, fun, typeV
 // ==================== КОМПОНЕНТ КАРТОЧКИ ЭКСКУРСИИ ====================
 const ExcursionCard = ({ excursion }) => {
   return (
-    <div 
-      className="excursion-card" 
-      onClick={() => window.location.href = `/excursion/${excursion.excursion_id}`}
+    <Link 
+      to={`/excursion/${excursion.excursion_id}`}
+      className="excursion-card-link"
+      style={{ textDecoration: 'none', color: 'inherit' }}
     >
-      <img 
-        src={excursion.image || cardImg} 
-        alt={excursion.title} 
-        className="excursion-image" 
-      />
-      <div className="excursion-info">
-        <h2 className="excursion-title">{excursion.title}</h2>
-        <p className="excursion-description">{excursion.short_description}</p>
-        <div className="excursion-meta">
-          <span className="rating">
-            ⭐ {Number(excursion.avg_rating).toFixed(1)} ({excursion.reviews_count} отзывов)
-          </span>
-          <span className="guide">{excursion.guide_name}</span>
+      <div className="excursion-card">
+        <img 
+          src={excursion.image || cardImg} 
+          alt={excursion.title} 
+          className="excursion-image" 
+        />
+        <div className="excursion-info">
+          <h2 className="excursion-title">{excursion.title}</h2>
+          <p className="excursion-description">{excursion.short_description}</p>
+          <div className="excursion-meta">
+            <span className="rating">
+              ⭐ {parseFloat(excursion.avg_rating || 0).toFixed(1)} ({excursion.reviews_count} отзывов)
+            </span>
+            <span className="guide">{excursion.guide_name}</span>
+          </div>
+          <div className="excursion-details">
+            <span className="duration">{excursion.duration} часов</span>
+            <span className="price">
+              <span className="current">₽{excursion.price.toLocaleString('ru-RU')}</span>
+              <span className="old">₽{excursion.old_price?.toLocaleString('ru-RU') || ''}</span>
+            </span>
+          </div>
+          {/* Кнопка для перехода на детальную страницу */}
+          <div className="details-button-wrapper">
+            <span className="details-button">Подробнее</span>
+          </div>
         </div>
-        <div className="excursion-details">
-          <span className="duration">{excursion.duration} часов</span>
-          <span className="price">
-            <span className="current">₽{excursion.price}</span>
-            <span className="old">₽{excursion.old_price}</span>
-          </span>
-        </div>
-        <button className="details-button">Подробнее</button>
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -413,9 +420,9 @@ const FiltersPanel = ({
 // ==================== КОМПОНЕНТ СПИСКА ЭКСКУРСИЙ ====================
 const ExcursionList = ({ excursionCards, sort, onSortChange }) => {
 
-    // ✅ создаём отсортированную копию массива
+    // создаём отсортированную копию массива
 const sortedCards = React.useMemo(() => {
-  if (!sort) return excursionCards; // ✅ ничего не сортируем
+  if (!sort) return excursionCards; // ничего не сортируем
 
   return [...excursionCards].sort((a, b) => {
     if (sort === "price_asc") return a.price - b.price;
@@ -489,14 +496,14 @@ const ExcursionsPage = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const location = useLocation();
 
-  // ✅ 1. Чтение параметров из URL при первом рендере
+  // 1. Чтение параметров из URL при первом рендере
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const initialLocation = params.get("location") || "";
     const initialStart = params.get("start");
     const initialEnd = params.get("end");
 
-    console.log("📥 Получены параметры из URL:", {
+    console.log("Получены параметры из URL:", {
       initialLocation,
       initialStart,
       initialEnd,
@@ -526,7 +533,7 @@ const ExcursionsPage = () => {
     }, 100);
   }, [location.search]);
 
-  // ✅ 2. Применение фильтров при изменении searchQuery или dateRange (НО НЕ при начальной загрузке)
+  // 2. Применение фильтров при изменении searchQuery или dateRange (НО НЕ при начальной загрузке)
   useEffect(() => {
     // Если это начальная загрузка - не применяем фильтры автоматически
     if (isInitialLoad) return;
@@ -534,7 +541,7 @@ const ExcursionsPage = () => {
     const hasSearchParams = searchQuery.trim() !== "" || dateRange[0].startDate || dateRange[0].endDate;
     
     if (hasSearchParams) {
-      console.log("🔍 Автоматическое применение фильтров (не начальная загрузка):", {
+      console.log("Автоматическое применение фильтров (не начальная загрузка):", {
         searchQuery,
         dateRange
       });
@@ -546,29 +553,29 @@ const ExcursionsPage = () => {
       return () => clearTimeout(timer);
     } else {
       // Если параметры поиска пустые - загружаем ВСЕ экскурсии
-      console.log("🔄 Нет параметров поиска, загружаю все экскурсии...");
+      console.log("Нет параметров поиска, загружаю все экскурсии...");
       loadAllExcursions();
     }
   }, [searchQuery, dateRange, isInitialLoad]);
 
-  // ✅ 3. Функция для загрузки ВСЕХ экскурсий
+  // 3. Функция для загрузки ВСЕХ экскурсий
   const loadAllExcursions = useCallback(async () => {
     try {
-      console.log("🔄 Загрузка ВСЕХ экскурсий...");
+      console.log("Загрузка ВСЕХ экскурсий...");
       const cardsRes = await fetch(`${API_BASE}?method=getExcursionCards`);
       const cardsData = await cardsRes.json();
       setExcursionCards(cardsData);
-      console.log("✅ Загружены все экскурсии:", cardsData.length);
+      console.log("Загружены все экскурсии:", cardsData.length);
     } catch (err) {
-      console.error("❌ Ошибка загрузки всех экскурсий:", err);
+      console.error("Ошибка загрузки всех экскурсий:", err);
     }
   }, []);
 
-  // ✅ 4. Загрузка данных для фильтров при монтировании
+  // 4. Загрузка данных для фильтров при монтировании
   useEffect(() => {
     const loadFilterData = async () => {
       try {
-        console.log("📊 Загрузка данных для фильтров...");
+        console.log("Загрузка данных для фильтров...");
         
         const [priceRes, langRes, specRes, typeRes, transportRes, activityRes] = 
           await Promise.all([
@@ -587,9 +594,9 @@ const ExcursionsPage = () => {
         setTransportTypes(await transportRes.json());
         setActivities(await activityRes.json());
         
-        console.log("✅ Данные фильтров загружены");
+        console.log("Данные фильтров загружены");
       } catch (err) {
-        console.error("❌ Ошибка загрузки данных фильтров:", err);
+        console.error("Ошибка загрузки данных фильтров:", err);
       }
     };
     
@@ -600,7 +607,7 @@ const ExcursionsPage = () => {
     const hasUrlParams = params.has("location") || params.has("start") || params.has("end");
     
     if (!hasUrlParams) {
-      console.log("🚀 Нет параметров в URL, загружаю все экскурсии при монтировании");
+      console.log("Нет параметров в URL, загружаю все экскурсии при монтировании");
       loadAllExcursions();
     }
   }, [location.search, loadAllExcursions]);
@@ -626,7 +633,7 @@ const ExcursionsPage = () => {
 
   // Основная функция применения фильтров
   const applyFilters = useCallback(async () => {
-    console.log("🚀 Вызов applyFilters с параметрами:", {
+    console.log("Вызов applyFilters с параметрами:", {
       searchQuery,
       dateRange,
       isInitialLoad
@@ -651,7 +658,7 @@ const ExcursionsPage = () => {
       dateEnd: formatDateForAPI(end),
     };
 
-    console.log("📤 Отправляемые фильтры на сервер:", filters);
+    console.log("Отправляемые фильтры на сервер:", filters);
 
     try {
       const res = await fetch(`${API_BASE}?method=getExcursionsFiltered`, {
@@ -661,16 +668,16 @@ const ExcursionsPage = () => {
       });
 
       const result = await res.json();
-      console.log("📥 Ответ от сервера:", result);
+      console.log("Ответ от сервера:", result);
 
       if (result.success) {
         setExcursionCards(result.data);
-        console.log("✅ Успешно загружено:", result.total, "экскурсий");
+        console.log("Успешно загружено:", result.total, "экскурсий");
       } else {
-        console.error("❌ Ошибка сервера:", result.error);
+        console.error("Ошибка сервера:", result.error);
       }
     } catch (err) {
-      console.error("❌ Ошибка применения фильтров:", err);
+      console.error("Ошибка применения фильтров:", err);
     }
   }, [
     selectedTypes,
@@ -687,7 +694,7 @@ const ExcursionsPage = () => {
 
   // Обработчик поиска из баннера
   const handleBannerSearch = () => {
-    console.log("🎯 Ручной поиск из баннера");
+    console.log("Ручной поиск из баннера");
     applyFilters();
   };
 
