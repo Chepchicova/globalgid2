@@ -95,19 +95,59 @@
   .checkbox-group {
     display: flex;
     align-items: flex-end;
+    margin-top: 28px; /* Выравнивание по высоте с другими полями */
   }
   
   .checkbox-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     margin-bottom: 0;
+    font-weight: 500;
+    color: #2c3e50;
   }
   
+  /* Кастомный зеленый чекбокс с галочкой */
   .checkbox-group input[type="checkbox"] {
-    width: auto;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid #DBDFE9;
+    background: white;
     cursor: pointer;
+    position: relative;
+    margin: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .checkbox-group input[type="checkbox"]:hover {
+    border-color: #3E845C;
+  }
+  
+  .checkbox-group input[type="checkbox"]:checked {
+    background: #3E845C;
+    border-color: #3E845C;
+  }
+  
+  .checkbox-group input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 11px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -60%) rotate(45deg);
+  }
+  
+  .checkbox-group input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
   }
   
   .form-actions {
@@ -162,28 +202,244 @@
     color: #666;
   }
   
+  /* Стили для превью изображений (загруженных в БД) */
+  .images-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+  }
+
+  .image-preview-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ddd;
+  }
+
+  .image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .delete-image-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .delete-image-btn:hover {
+    background: rgba(220, 53, 69, 1);
+  }
+
+  /* Стили для drag & drop зоны */
+  .image-upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .image-upload-zone:hover {
+    border-color: #3E845C;
+    background: #f0f9f4;
+  }
+
+  .image-upload-zone.drag-active {
+    border-color: #3E845C;
+    background: #e8f5e9;
+    border-style: solid;
+  }
+
+  .upload-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .upload-zone-content svg {
+    color: #3E845C;
+    margin-bottom: 8px;
+  }
+
+  .upload-zone-text {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+  }
+
+  .upload-zone-button {
+    display: inline-block;
+    padding: 10px 24px;
+    background: #3E845C;
+    color: white !important;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s;
+    margin-top: 8px;
+  }
+  
+  .upload-zone-button * {
+    color: white !important;
+  }
+
+  .upload-zone-button:hover {
+    background: #2D4B49;
+  }
+
+  .upload-zone-hint {
+    color: #999;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  /* Стили для предпросмотра выбранных файлов */
+  .selected-files-preview {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .selected-files-count {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .selected-files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+
+  .selected-file-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    background: #f5f5f5;
+  }
+
+  .selected-file-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .remove-file-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+
+  .remove-file-btn:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+  }
+
+  .file-name {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: white;
+    font-size: 11px;
+    padding: 8px 6px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   @media (max-width: 768px) {
     .admin-excursion-form-page {
       padding: 80px 15px 30px;
     }
-  
+
     .admin-form-header {
       flex-direction: column;
       align-items: flex-start;
       gap: 15px;
     }
-  
+
     .form-row {
       flex-direction: column;
       gap: 15px;
     }
-  
+
     .form-actions {
       flex-direction: column;
     }
-  
+
     .form-actions button {
       width: 100%;
+    }
+
+    .images-preview {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+    }
+
+    .image-upload-zone {
+      padding: 30px 15px;
+    }
+
+    .upload-zone-content svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .upload-zone-text {
+      font-size: 14px;
+    }
+
+    .upload-zone-button {
+      padding: 8px 20px;
+      font-size: 14px;
+    }
+
+    .selected-files-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
     }
   }
   

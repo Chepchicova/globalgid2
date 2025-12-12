@@ -153,12 +153,34 @@ function updateAdminExcursion() {
     
     $id = (int)$input['excursion_id'];
     
+    // Валидация заголовка (если передан)
+    if (isset($input['title'])) {
+        $title = trim($input['title']);
+        if (mb_strlen($title) < 2) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Заголовок должен содержать минимум 2 символа']);
+            return;
+        }
+        $input['title'] = $title;
+    }
+    
+    // Валидация даты (если передана)
+    if (isset($input['date_event'])) {
+        $dateEvent = $input['date_event'];
+        $today = date('Y-m-d');
+        if ($dateEvent < $today) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Дата проведения не может быть в прошлом']);
+            return;
+        }
+    }
+    
     // Подготовка данных для обновления
     $fields = [];
     $params = [];
     
     $allowedFields = [
-        'title', 'description', 'duration', 'price', 'type', 
+        'title', 'description', 'program', 'duration', 'price', 'type', 
         'transport_type', 'status', 'count_seats', 'children', 
         'activity', 'date_event', 'location_id', 'guide_id', 
         'specialization_id', 'language_id'
@@ -166,8 +188,14 @@ function updateAdminExcursion() {
     
     foreach ($allowedFields as $field) {
         if (isset($input[$field])) {
-            $fields[] = "$field = ?";
-            $params[] = $input[$field];
+            // Для children преобразуем в int
+            if ($field === 'children') {
+                $fields[] = "$field = ?";
+                $params[] = $input[$field] ? 1 : 0;
+            } else {
+                $fields[] = "$field = ?";
+                $params[] = $input[$field];
+            }
         }
     }
     
@@ -191,9 +219,22 @@ function updateAdminExcursion() {
         ], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
         http_response_code(500);
+        $errorMessage = $e->getMessage();
+        
+        // Перевод типичных ошибок БД на русский
+        if (strpos($errorMessage, 'foreign key constraint') !== false) {
+            $errorMessage = 'Ошибка: выбранное значение не существует в базе данных';
+        } elseif (strpos($errorMessage, 'Duplicate entry') !== false) {
+            $errorMessage = 'Ошибка: запись с такими данными уже существует';
+        } elseif (strpos($errorMessage, 'Data too long') !== false) {
+            $errorMessage = 'Ошибка: введенные данные слишком длинные';
+        } else {
+            $errorMessage = 'Ошибка сохранения данных: ' . $errorMessage;
+        }
+        
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage()
+            'error' => $errorMessage
         ], JSON_UNESCAPED_UNICODE);
     }
 }
@@ -208,26 +249,63 @@ function createAdminExcursion() {
     $input = json_decode(file_get_contents('php://input'), true);
     
     // Обязательные поля
-    $required = ['title', 'guide_id', 'duration', 'price', 'type', 'transport_type', 'activity', 'date_event', 'count_seats'];
+    $required = ['title', 'guide_id', 'duration', 'price', 'type', 'transport_type', 'activity', 'date_event', 'count_seats', 'location_id', 'specialization_id', 'language_id'];
+    $fieldNames = [
+        'title' => 'Заголовок',
+        'guide_id' => 'Гид',
+        'duration' => 'Длительность',
+        'price' => 'Цена',
+        'type' => 'Тип экскурсии',
+        'transport_type' => 'Тип передвижения',
+        'activity' => 'Активность',
+        'date_event' => 'Дата проведения',
+        'count_seats' => 'Количество мест',
+        'location_id' => 'Локация',
+        'specialization_id' => 'Категория',
+        'language_id' => 'Язык'
+    ];
+    
     foreach ($required as $field) {
-        if (!isset($input[$field]) || $input[$field] === '') {
+        if (!isset($input[$field]) || $input[$field] === '' || $input[$field] === null) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => "Поле $field обязательно"]);
+            $fieldName = $fieldNames[$field] ?? $field;
+            echo json_encode(['success' => false, 'error' => "Поле '$fieldName' обязательно для заполнения"]);
             return;
         }
     }
     
+    // Валидация заголовка (минимум 2 буквы)
+    $title = trim($input['title']);
+    if (mb_strlen($title) < 2) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Заголовок должен содержать минимум 2 символа']);
+        return;
+    }
+    
+    // Валидация даты (не должна быть в прошлом)
+    $dateEvent = $input['date_event'];
+    $today = date('Y-m-d');
+    if ($dateEvent < $today) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Дата проведения не может быть в прошлом']);
+        return;
+    }
+    
+    // Преобразование children в int (0 или 1)
+    $children = isset($input['children']) && $input['children'] ? 1 : 0;
+    
     $sql = "
         INSERT INTO Excursion (
-            title, description, guide_id, duration, price, type, 
+            title, description, program, guide_id, duration, price, type, 
             transport_type, status, count_seats, children, activity, 
             date_event, location_id, specialization_id, language_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ";
     
     $params = [
-        $input['title'],
+        $title,
         $input['description'] ?? null,
+        $input['program'] ?? null,
         $input['guide_id'],
         $input['duration'],
         $input['price'],
@@ -235,12 +313,12 @@ function createAdminExcursion() {
         $input['transport_type'],
         $input['status'] ?? 'hidden',
         $input['count_seats'],
-        $input['children'] ?? 0,
+        $children,
         $input['activity'],
-        $input['date_event'],
-        $input['location_id'] ?? null,
-        $input['specialization_id'] ?? null,
-        $input['language_id'] ?? null
+        $dateEvent,
+        $input['location_id'],
+        $input['specialization_id'],
+        $input['language_id']
     ];
     
     try {
@@ -254,9 +332,22 @@ function createAdminExcursion() {
         ], JSON_UNESCAPED_UNICODE);
     } catch (PDOException $e) {
         http_response_code(500);
+        $errorMessage = $e->getMessage();
+        
+        // Перевод типичных ошибок БД на русский
+        if (strpos($errorMessage, 'foreign key constraint') !== false) {
+            $errorMessage = 'Ошибка: выбранное значение не существует в базе данных';
+        } elseif (strpos($errorMessage, 'Duplicate entry') !== false) {
+            $errorMessage = 'Ошибка: запись с такими данными уже существует';
+        } elseif (strpos($errorMessage, 'Data too long') !== false) {
+            $errorMessage = 'Ошибка: введенные данные слишком длинные';
+        } else {
+            $errorMessage = 'Ошибка сохранения данных: ' . $errorMessage;
+        }
+        
         echo json_encode([
             'success' => false,
-            'error' => $e->getMessage()
+            'error' => $errorMessage
         ], JSON_UNESCAPED_UNICODE);
     }
 }

@@ -13,6 +13,7 @@ export default function AdminExcursionForm({ user }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    program: '',
     guide_id: '',
     duration: '',
     price: '',
@@ -38,6 +39,10 @@ export default function AdminExcursionForm({ user }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [images, setImages] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
 
   // Проверка прав администратора
   useEffect(() => {
@@ -95,6 +100,7 @@ export default function AdminExcursionForm({ user }) {
           setFormData({
             title: ex.title || '',
             description: ex.description || '',
+            program: ex.program || '',
             guide_id: ex.guide_id || '',
             duration: ex.duration || '',
             price: ex.price || '',
@@ -109,6 +115,16 @@ export default function AdminExcursionForm({ user }) {
             specialization_id: ex.specialization_id || '',
             language_id: ex.language_id || ''
           });
+          
+          // Загружаем изображения экскурсии
+          const detailRes = await fetch(`http://localhost/globalgid2/public/backend/excursions/detail.php?id=${id}`);
+          const detailData = await detailRes.json();
+          if (detailData.success && detailData.images) {
+            setImages(detailData.images);
+          }
+          
+          // Очищаем выбранные файлы при редактировании
+          setSelectedFiles([]);
         }
       }
     } catch (err) {
@@ -121,21 +137,214 @@ export default function AdminExcursionForm({ user }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    // Ограничение на двойные пробелы для текстовых полей
+    let processedValue = value;
+    if (type === 'text' || type === 'textarea') {
+      // Заменяем множественные пробелы на один
+      processedValue = value.replace(/\s{2,}/g, ' ');
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : processedValue
     }));
   };
+
+  const uploadImages = async (excursionId, files) => {
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      formData.append('excursion_id', excursionId);
+      
+      for (let i = 0; i < files.length; i++) {
+        formData.append('images[]', files[i]);
+      }
+      
+      const response = await fetch('http://localhost/globalgid2/public/backend/upload_excursion_images.php', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Обновляем список изображений
+        setImages(prev => [...prev, ...data.uploaded]);
+      } else {
+        console.error('Ошибка загрузки изображений:', data.error);
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки изображений:', err);
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!window.confirm('Удалить это изображение?')) return;
+    
+    try {
+      const response = await fetch('http://localhost/globalgid2/public/backend/delete_excursion_image.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ image_id: imageId })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setImages(prev => prev.filter(img => img.image_id !== imageId));
+      } else {
+        alert('Ошибка удаления изображения: ' + data.error);
+      }
+    } catch (err) {
+      console.error('Ошибка удаления изображения:', err);
+    }
+  };
+
+  // Обработка выбора файлов
+  const handleFileSelect = (files) => {
+    const fileArray = Array.from(files);
+    const validFiles = fileArray.filter(file => {
+      // Проверка типа
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert(`Файл ${file.name} имеет недопустимый тип. Разрешены только изображения.`);
+        return false;
+      }
+      
+      // Проверка размера (5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert(`Файл ${file.name} слишком большой (максимум 5MB).`);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Создаем preview URL для каждого файла
+    const filesWithPreview = validFiles.map(file => {
+      const fileWithPreview = Object.assign(file, {
+        preview: URL.createObjectURL(file)
+      });
+      return fileWithPreview;
+    });
+    
+    setSelectedFiles(prev => [...prev, ...filesWithPreview]);
+  };
+
+  // Обработка drag & drop
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files);
+    }
+  };
+
+  // Удаление файла из предварительного списка
+  const removeSelectedFile = (index) => {
+    setSelectedFiles(prev => {
+      // Освобождаем URL объект для удаляемого файла
+      const fileToRemove = prev[index];
+      if (fileToRemove && fileToRemove.preview) {
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  // Очистка URL объектов при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      // Освобождаем все URL объекты при размонтировании
+      selectedFiles.forEach(file => {
+        if (file.preview) {
+          URL.revokeObjectURL(file.preview);
+        }
+      });
+    };
+  }, [selectedFiles]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
 
+    // Валидация на клиенте
+    const title = formData.title.trim();
+    if (title.length < 2) {
+      setError('Заголовок должен содержать минимум 2 символа');
+      setSaving(false);
+      return;
+    }
+
+      // Проверка длительности (не более 24 часов)
+  if (parseInt(formData.duration) > 24) {
+    setError('Длительность не может быть больше 24 часов');
+    setSaving(false);
+    return;
+  }
+
+    // Проверка обязательных полей
+    if (!formData.location_id) {
+      setError('Поле "Локация" обязательно для заполнения');
+      setSaving(false);
+      return;
+    }
+
+    if (!formData.specialization_id) {
+      setError('Поле "Категория" обязательно для заполнения');
+      setSaving(false);
+      return;
+    }
+
+    if (!formData.language_id) {
+      setError('Поле "Язык" обязательно для заполнения');
+      setSaving(false);
+      return;
+    }
+
+    // Проверка даты (не должна быть в прошлом)
+    if (formData.date_event) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const eventDate = new Date(formData.date_event);
+      if (eventDate < today) {
+        setError('Дата проведения не может быть в прошлом');
+        setSaving(false);
+        return;
+      }
+    }
+
+    // Проверка на наличие хотя бы одного изображения при создании
+    if (!isEdit && selectedFiles.length === 0 && images.length === 0) {
+      setError('Необходимо добавить хотя бы одно изображение');
+      setSaving(false);
+      return;
+    }
+
     try {
       const method = isEdit ? 'updateAdminExcursion' : 'createAdminExcursion';
       const payload = {
         ...formData,
+        title: title,
         excursion_id: isEdit ? parseInt(id) : undefined
       };
 
@@ -153,6 +362,13 @@ export default function AdminExcursionForm({ user }) {
       const data = await response.json();
 
       if (data.success) {
+        const excursionId = isEdit ? parseInt(id) : data.excursion_id;
+        
+        // Загружаем изображения, если они были выбраны
+        if (selectedFiles.length > 0) {
+          await uploadImages(excursionId, selectedFiles);
+        }
+        
         navigate('/admin/excursions');
       } else {
         setError(data.error || 'Ошибка сохранения');
@@ -192,7 +408,12 @@ export default function AdminExcursionForm({ user }) {
               value={formData.title}
               onChange={handleChange}
               required
+              minLength={2}
+              maxLength={60}
             />
+            <small style={{color: '#666', display: 'block', marginTop: '5px'}}>
+              {formData.title.length}/60 символов
+            </small>
           </div>
         </div>
 
@@ -204,7 +425,27 @@ export default function AdminExcursionForm({ user }) {
               value={formData.description}
               onChange={handleChange}
               rows="5"
+              maxLength={3000}
             />
+            <small style={{color: '#666', display: 'block', marginTop: '5px'}}>
+              {formData.description.length}/3000 символов
+            </small>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group full-width">
+            <label>Программа</label>
+            <textarea
+              name="program"
+              value={formData.program}
+              onChange={handleChange}
+              rows="8"
+              maxLength={2000}
+            />
+            <small style={{color: '#666', display: 'block', marginTop: '5px'}}>
+              {formData.program.length}/2000 символов
+            </small>
           </div>
         </div>
 
@@ -227,11 +468,12 @@ export default function AdminExcursionForm({ user }) {
           </div>
 
           <div className="form-group">
-            <label>Локация</label>
+            <label>Локация *</label>
             <select
               name="location_id"
               value={formData.location_id}
               onChange={handleChange}
+              required
             >
               <option value="">Выберите локацию</option>
               {locations.map(location => (
@@ -338,15 +580,17 @@ export default function AdminExcursionForm({ user }) {
               value={formData.date_event}
               onChange={handleChange}
               required
+              min={new Date().toISOString().split('T')[0]}
             />
           </div>
 
           <div className="form-group">
-            <label>Категория</label>
+            <label>Категория *</label>
             <select
               name="specialization_id"
               value={formData.specialization_id}
               onChange={handleChange}
+              required
             >
               <option value="">Выберите категорию</option>
               {specializations.map(spec => (
@@ -358,11 +602,12 @@ export default function AdminExcursionForm({ user }) {
           </div>
 
           <div className="form-group">
-            <label>Язык</label>
+            <label>Язык *</label>
             <select
               name="language_id"
               value={formData.language_id}
               onChange={handleChange}
+              required
             >
               <option value="">Выберите язык</option>
               {languages.map(lang => (
@@ -399,6 +644,103 @@ export default function AdminExcursionForm({ user }) {
             </label>
           </div>
         </div>
+
+        {/* Загрузка изображений */}
+        <div className="form-row">
+          <div className="form-group full-width">
+            <label>Изображения экскурсии</label>
+            
+            {/* Drag & Drop зона */}
+            <div
+              className={`image-upload-zone ${dragActive ? 'drag-active' : ''}`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <div className="upload-zone-content">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p className="upload-zone-text">
+                  Перетащите изображения сюда или
+                </p>
+                <label className="upload-zone-button">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handleFileSelect(e.target.files);
+                        e.target.value = ''; // Сбрасываем input для возможности повторного выбора того же файла
+                      }
+                    }}
+                    style={{ display: 'none' }}
+                  />
+                  Выбрать файлы
+                </label>
+                <small className="upload-zone-hint">
+                  JPG, PNG, GIF, WebP (максимум 5MB каждое)
+                </small>
+              </div>
+            </div>
+
+            {/* Предпросмотр выбранных файлов */}
+            {selectedFiles.length > 0 && (
+              <div className="selected-files-preview">
+                <p className="selected-files-count">Выбрано изображений: {selectedFiles.length}</p>
+                <div className="selected-files-grid">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="selected-file-item">
+                      <img 
+                        src={file.preview || URL.createObjectURL(file)} 
+                        alt={`Preview ${index + 1}`}
+                      />
+                      <button
+                        type="button"
+                        className="remove-file-btn"
+                        onClick={() => removeSelectedFile(index)}
+                        title="Удалить"
+                      >
+                        ×
+                      </button>
+                      <div className="file-name">{file.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Отображение загруженных изображений (при редактировании) */}
+        {isEdit && images.length > 0 && (
+          <div className="form-row">
+            <div className="form-group full-width">
+              <label>Загруженные изображения</label>
+              <div className="images-preview">
+                {images.map((img) => (
+                  <div key={img.image_id} className="image-preview-item">
+                    <img 
+                      src={`http://localhost/globalgid2/public/${img.image_path}`} 
+                      alt="Preview"
+                    />
+                    <button
+                      type="button"
+                      className="delete-image-btn"
+                      onClick={() => handleDeleteImage(img.image_id)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="form-actions">
           <button type="button" onClick={() => navigate('/admin/excursions')} className="btn-cancel">

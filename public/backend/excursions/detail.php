@@ -49,6 +49,18 @@ try {
     // Для отладки - посмотрим что в программе
     error_log("Program for excursion $excursion_id: " . substr($excursion['program'] ?? 'NULL', 0, 100));
     
+    // Получаем изображения экскурсии
+    $images_sql = "
+        SELECT image_id, image_path
+        FROM Excursion_Images
+        WHERE excursion_id = ?
+        ORDER BY image_id ASC
+    ";
+    
+    $images_stmt = $conn->prepare($images_sql);
+    $images_stmt->execute([$excursion_id]);
+    $images = $images_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
     // Получаем отзывы
     $reviews_sql = "
         SELECT 
@@ -68,6 +80,7 @@ try {
     $result = [
         'success' => true,
         'data' => $excursion,
+        'images' => $images,
         'reviews' => $reviews
     ];
     

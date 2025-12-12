@@ -56,13 +56,13 @@ const checkAuth = async () => {
     
     if (data.success && data.logged_in && data.user) {
       setUser(data.user);
-      console.log("✅ User authenticated:", data.user);
+      console.log("User authenticated:", data.user);
     } else {
       setUser(null);
-      console.log("❌ User not authenticated");
+      console.log("User not authenticated");
     }
   } catch (error) {
-    console.error("❌ Auth check failed:", error);
+    console.error("Auth check failed:", error);
     setUser(null);
   } finally {
     setLoading(false);
@@ -90,12 +90,12 @@ const checkAuth = async () => {
       
       if (data.success) {
         setUser(null);
-        console.log("✅ Logged out successfully");
+        console.log("Logged out successfully");
       } else {
-        console.error("❌ Logout failed:", data.message);
+        console.error("Logout failed:", data.message);
       }
     } catch (error) {
-      console.error("❌ Logout request failed:", error);
+      console.error(" Logout request failed:", error);
     }
   };
 

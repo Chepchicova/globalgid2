@@ -101,6 +101,7 @@ function getExcursionCards() {
         FROM Excursion e
         JOIN Guides g ON e.guide_id = g.guide_id
         LEFT JOIN Reviews r ON r.guide_id = g.guide_id
+        WHERE e.status != 'hidden'
         GROUP BY e.excursion_id
         ORDER BY e.date_event ASC
     ";
@@ -177,7 +178,7 @@ if (!empty($locationQuery)) {
         FROM Excursion e
         JOIN Guides g ON e.guide_id = g.guide_id
         LEFT JOIN Reviews r ON r.guide_id = g.guide_id
-        WHERE 1=1
+        WHERE e.status != 'hidden'
     ";
 
     $params = [];
