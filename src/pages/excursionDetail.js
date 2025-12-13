@@ -10,6 +10,9 @@ const ExcursionDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [participants, setParticipants] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchExcursionDetail = async () => {
@@ -37,6 +40,26 @@ const ExcursionDetail = () => {
 
     fetchExcursionDetail();
   }, [id]);
+
+  // Закрытие модального окна по Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        setIsModalOpen(false);
+        setSelectedImage(null);
+      }
+    };
+
+    if (isModalOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden'; // Блокируем скролл
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isModalOpen]);
 
   if (loading) {
     return (
@@ -75,21 +98,62 @@ const ExcursionDetail = () => {
 
   const excursionData = excursion.data;
   const reviews = excursion.reviews || [];
-  const images = excursion.images || [];
   const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+  const images = excursion.images || [];
+  const defaultImage = "http://localhost/globalgid2/public/uploads/excursions/default.png";
+
+  // Функция для получения URL изображения
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return defaultImage;
+    return `http://localhost/globalgid2/public/${imagePath}`;
+  };
+
+  // Функция для открытия модального окна с изображением
+  const openImageModal = (imagePath, index) => {
+    setSelectedImage({ url: getImageUrl(imagePath), index });
+    setIsModalOpen(true);
+  };
+
+  // Функция для закрытия модального окна
+  const closeImageModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage(null);
+  };
+
+  // Функция для переключения изображений в модальном окне
+  const navigateImage = (direction) => {
+    if (!selectedImage || displayImages.length === 0) return;
+    
+    let newIndex = selectedImage.index + direction;
+    
+    if (newIndex < 0) {
+      newIndex = displayImages.length - 1;
+    } else if (newIndex >= displayImages.length) {
+      newIndex = 0;
+    }
+    
+    setSelectedImage({
+      url: getImageUrl(displayImages[newIndex].image_path),
+      index: newIndex
+    });
+  };
+
+  // Определяем количество изображений (максимум 5)
+  const displayImages = images.slice(0, 5);
+  const imageCount = displayImages.length;
+
+    // Функции для управления счетчиком
+    const increaseParticipants = () => {
+      if (excursion && participants < excursion.data.count_seats) {
+        setParticipants(prev => prev + 1);
+      }
+    };
   
-  // Дефолтное изображение (серое)
-  const defaultImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2U1ZTdlYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5Y2E0YWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
-  
-  // Получаем изображения для отображения
-  const mainImage = images.length > 0 ? `http://localhost/globalgid2/public/${images[0].image_path}` : defaultImage;
-  const gridImages = images.slice(1, 5); // Следующие 4 изображения для сетки
-  const remainingCount = images.length > 5 ? images.length - 5 : 0;
-  
-  // Если нет изображений, заполняем сетку дефолтными
-  const displayGridImages = gridImages.length > 0 
-    ? gridImages 
-    : (images.length === 0 ? Array.from({ length: 4 }).map((_, i) => ({ image_id: `default-${i}`, image_path: null })) : []);
+    const decreaseParticipants = () => {
+      if (participants > 1) {
+        setParticipants(prev => prev - 1);
+      }
+    };
 
   return (
     <div className="excursion-detail-container">
@@ -102,39 +166,143 @@ const ExcursionDetail = () => {
 
       {/* Заголовок и кнопка избранного */}
       <header className="excursion-header">
-        <h1 className="excursion-title">{excursionData.title}</h1>
-        <button className="favorite-button">❤️ Добавить в избранное</button>
+        <div className="title-wrapper">
+          <h1 className="excursion-title">{excursionData.title}</h1>
+        </div>
+        <button className="favorite-button">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.9849 5C16.2412 5 14.2021 6.97669 13.1099 8.25C12.0176 6.97669 9.97844 5 8.23486 5C5.14845 5 3.35986 7.40736 3.35986 10.4712C3.35986 13.8654 6.60986 17.4584 13.1099 21.25C19.6099 17.4584 22.8599 13.9375 22.8599 10.6875C22.8599 7.62359 21.0712 5 17.9849 5Z" stroke="#242A37" strokeWidth="1.48571" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Сохранить
+        </button>
       </header>
 
       <div className="excursion-content">
         {/* Левая колонка: основное содержание */}
         <div className="excursion-main">
           {/* Галерея изображений */}
-          <div className="image-gallery">
-            <div className="main-image">
-              <img 
-                src={mainImage} 
-                alt={excursionData.title} 
-              />
-            </div>
-            <div className="image-grid">
-              {displayGridImages.map((img, index) => (
-                <div key={img.image_id} className="grid-image-item">
+          <div className={`image-gallery image-gallery-${imageCount || 1}`}>
+            {imageCount === 0 ? (
+              // Если нет изображений, показываем default.png
+              <div className="main-image" onClick={() => openImageModal(null, 0)}>
+                <img 
+                  src={defaultImage} 
+                  alt={excursionData.title} 
+                />
+              </div>
+            ) : imageCount === 1 ? (
+              // Одно изображение - на всю ширину
+              <div className="main-image" onClick={() => openImageModal(displayImages[0].image_path, 0)}>
+                <img 
+                  src={getImageUrl(displayImages[0].image_path)} 
+                  alt={excursionData.title} 
+                />
+              </div>
+            ) : imageCount === 2 ? (
+              // Два изображения - рядом
+              <>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[0].image_path, 0)}>
                   <img 
-                    src={img.image_path 
-                      ? `http://localhost/globalgid2/public/${img.image_path}` 
-                      : defaultImage
-                    } 
-                    alt={img.image_path ? `${excursionData.title} ${index + 2}` : 'No image'}
+                    src={getImageUrl(displayImages[0].image_path)} 
+                    alt={excursionData.title} 
                   />
-                  {img.image_path && index === displayGridImages.length - 1 && remainingCount > 0 && (
-                    <div className="image-overlay">
-                      <span className="more-images-count">+{remainingCount}</span>
-                    </div>
-                  )}
                 </div>
-              ))}
-            </div>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[1].image_path, 1)}>
+                  <img 
+                    src={getImageUrl(displayImages[1].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+              </>
+            ) : imageCount === 3 ? (
+              // Три изображения - одно большое слева, два справа
+              <>
+                <div className="gallery-item gallery-item-large" onClick={() => openImageModal(displayImages[0].image_path, 0)}>
+                  <img 
+                    src={getImageUrl(displayImages[0].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+                <div className="gallery-item-column">
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[1].image_path, 1)}>
+                    <img 
+                      src={getImageUrl(displayImages[1].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[2].image_path, 2)}>
+                    <img 
+                      src={getImageUrl(displayImages[2].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                </div>
+              </>
+            ) : imageCount === 4 ? (
+              // Четыре изображения - сетка 2x2
+              <>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[0].image_path, 0)}>
+                  <img 
+                    src={getImageUrl(displayImages[0].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[1].image_path, 1)}>
+                  <img 
+                    src={getImageUrl(displayImages[1].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[2].image_path, 2)}>
+                  <img 
+                    src={getImageUrl(displayImages[2].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+                <div className="gallery-item" onClick={() => openImageModal(displayImages[3].image_path, 3)}>
+                  <img 
+                    src={getImageUrl(displayImages[3].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+              </>
+            ) : (
+              // Пять изображений - одно большое слева, четыре справа (2x2)
+              <>
+                <div className="gallery-item gallery-item-large" onClick={() => openImageModal(displayImages[0].image_path, 0)}>
+                  <img 
+                    src={getImageUrl(displayImages[0].image_path)} 
+                    alt={excursionData.title} 
+                  />
+                </div>
+                <div className="gallery-item-grid">
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[1].image_path, 1)}>
+                    <img 
+                      src={getImageUrl(displayImages[1].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[2].image_path, 2)}>
+                    <img 
+                      src={getImageUrl(displayImages[2].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[3].image_path, 3)}>
+                    <img 
+                      src={getImageUrl(displayImages[3].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                  <div className="gallery-item" onClick={() => openImageModal(displayImages[4].image_path, 4)}>
+                    <img 
+                      src={getImageUrl(displayImages[4].image_path)} 
+                      alt={excursionData.title} 
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Теги */}
@@ -233,48 +401,108 @@ const ExcursionDetail = () => {
         {/* Правая колонка: карточка бронирования */}
         <aside className="booking-sidebar">
           <div className="booking-card">
-            <h3>Забронировать экскурсию</h3>
-            
-            <div className="price-info">
-              <span className="price">₽{excursionData.price}</span>
-              <span className="per-person">за человека</span>
+            {/* Цена и предоплата */}
+            <div className="price-header">
+              <h3 className="total-price">от ₽{parseInt(excursionData.price).toLocaleString()}</h3>
+              <p className="prepayment">Предоплата – ₽{Math.round(excursionData.price * 0.2).toLocaleString()}</p>
             </div>
-            
-            <div className="excursion-meta">
-              <div className="meta-item">
-                <span className="meta-label">Длительность:</span>
-                <span className="meta-value">{excursionData.duration} часов</span>
+
+            {/* Участники */}
+            <div className="participants-section">
+              <h4>Участников</h4>
+              <div className="participants-counter">
+                <button 
+                  className="counter-btn" 
+                  onClick={decreaseParticipants}
+                  disabled={participants <= 1}
+                >
+                  -
+                </button>
+                <span className="participants-count">{participants}</span>
+                <button 
+                  className="counter-btn" 
+                  onClick={increaseParticipants}
+                  disabled={excursion && participants >= excursion.data.count_seats}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Информация об экскурсии */}
+            <div className="excursion-info">
+              <div className="info-item">
+                <span className="info-label">Длительность:</span>
+                <span className="info-value">{excursionData.duration} часов</span>
               </div>
               
-              <div className="meta-item">
-                <span className="meta-label">Место:</span>
-                <span className="meta-value">
+              <div className="info-item">
+                <span className="info-label">Место:</span>
+                <span className="info-value">
                   {excursionData.city}, {excursionData.country}
                 </span>
               </div>
               
-              <div className="meta-item">
-                <span className="meta-label">Язык:</span>
-                <span className="meta-value">{excursionData.language_name}</span>
+              <div className="info-item">
+                <span className="info-label">Язык:</span>
+                <span className="info-value">{excursionData.language_name}</span>
               </div>
               
-              <div className="meta-item">
-                <span className="meta-label">Доступно мест:</span>
-                <span className="meta-value">{excursionData.count_seats}</span>
+              <div className="info-item">
+                <span className="info-label">Доступно мест:</span>
+                <span className="info-value">{excursionData.count_seats}</span>
               </div>
             </div>
-            
+
+            {/* Кнопка бронирования */}
             <button className="book-button">Забронировать</button>
-            
-            <div className="rating-info">
-              <span className="rating-stars">⭐ {parseFloat(excursionData.avg_rating || 0).toFixed(1)}</span>
-              <span className="reviews-count">
-                ({excursionData.reviews_count || 0} отзывов)
-              </span>
+
+            {/* Информация об отмене */}
+            <div className="cancellation-info">
+              <p>Полная отмена в течение 24 часов</p>
             </div>
           </div>
         </aside>
       </div>
+
+      {/* Модальное окно для просмотра изображений */}
+      {isModalOpen && selectedImage && (
+        <div className="image-modal-overlay" onClick={closeImageModal}>
+          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="image-modal-close" onClick={closeImageModal}>
+              ×
+            </button>
+            {displayImages.length > 1 && (
+              <>
+                <button 
+                  className="image-modal-nav image-modal-prev" 
+                  onClick={() => navigateImage(-1)}
+                  aria-label="Предыдущее изображение"
+                >
+                  ‹
+                </button>
+                <button 
+                  className="image-modal-nav image-modal-next" 
+                  onClick={() => navigateImage(1)}
+                  aria-label="Следующее изображение"
+                >
+                  ›
+                </button>
+              </>
+            )}
+            <img 
+              src={selectedImage.url} 
+              alt={excursionData.title} 
+              className="image-modal-image"
+            />
+            {displayImages.length > 1 && (
+              <div className="image-modal-counter">
+                {selectedImage.index + 1} / {displayImages.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -208,6 +208,16 @@ export default function AdminExcursionForm({ user }) {
   // Обработка выбора файлов
   const handleFileSelect = (files) => {
     const fileArray = Array.from(files);
+    
+    // Проверяем общее количество фото (существующие + уже выбранные + новые)
+    const totalImages = images.length + selectedFiles.length;
+    const maxImages = 5;
+    
+    if (totalImages >= maxImages) {
+      alert(`Максимальное количество изображений - ${maxImages}. Удалите существующие изображения перед добавлением новых.`);
+      return;
+    }
+    
     const validFiles = fileArray.filter(file => {
       // Проверка типа
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -226,8 +236,16 @@ export default function AdminExcursionForm({ user }) {
       return true;
     });
     
+    // Проверяем, не превысит ли добавление новых файлов лимит
+    const remainingSlots = maxImages - totalImages;
+    const filesToAdd = validFiles.slice(0, remainingSlots);
+    
+    if (validFiles.length > remainingSlots) {
+      alert(`Можно добавить только ${remainingSlots} изображений. Максимальное количество - ${maxImages}.`);
+    }
+    
     // Создаем preview URL для каждого файла
-    const filesWithPreview = validFiles.map(file => {
+    const filesWithPreview = filesToAdd.map(file => {
       const fileWithPreview = Object.assign(file, {
         preview: URL.createObjectURL(file)
       });
@@ -336,6 +354,14 @@ export default function AdminExcursionForm({ user }) {
     // Проверка на наличие хотя бы одного изображения при создании
     if (!isEdit && selectedFiles.length === 0 && images.length === 0) {
       setError('Необходимо добавить хотя бы одно изображение');
+      setSaving(false);
+      return;
+    }
+
+    // Проверка на максимальное количество изображений (5)
+    const totalImagesCount = images.length + selectedFiles.length;
+    if (totalImagesCount > 5) {
+      setError('Максимальное количество изображений - 5. Удалите лишние изображения.');
       setSaving(false);
       return;
     }
@@ -649,14 +675,18 @@ export default function AdminExcursionForm({ user }) {
         <div className="form-row">
           <div className="form-group full-width">
             <label>Изображения экскурсии</label>
+            <small style={{color: '#666', display: 'block', marginBottom: '10px'}}>
+              Загружено: {images.length + selectedFiles.length} / 5 (максимум 5 изображений)
+            </small>
             
             {/* Drag & Drop зона */}
             <div
-              className={`image-upload-zone ${dragActive ? 'drag-active' : ''}`}
+              className={`image-upload-zone ${dragActive ? 'drag-active' : ''} ${(images.length + selectedFiles.length) >= 5 ? 'upload-disabled' : ''}`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              style={{ opacity: (images.length + selectedFiles.length) >= 5 ? 0.5 : 1, pointerEvents: (images.length + selectedFiles.length) >= 5 ? 'none' : 'auto' }}
             >
               <div className="upload-zone-content">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -683,7 +713,7 @@ export default function AdminExcursionForm({ user }) {
                   Выбрать файлы
                 </label>
                 <small className="upload-zone-hint">
-                  JPG, PNG, GIF, WebP (максимум 5MB каждое)
+                  JPG, PNG, GIF, WebP (максимум 5MB каждое, не более 5 изображений)
                 </small>
               </div>
             </div>

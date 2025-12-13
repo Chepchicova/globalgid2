@@ -108,6 +108,18 @@ const InlineField = ({ label, placeholder, type = "number", min, max, fun, typeV
 
 // ==================== КОМПОНЕНТ КАРТОЧКИ ЭКСКУРСИИ ====================
 const ExcursionCard = ({ excursion }) => {
+  // Формируем URL изображения: если есть image путь, используем его, иначе дефолтное
+  const getImageUrl = () => {
+    if (excursion.image) {
+      // Если путь начинается с http, используем как есть, иначе добавляем базовый путь
+      if (excursion.image.startsWith('http')) {
+        return excursion.image;
+      }
+      return `http://localhost/globalgid2/public/${excursion.image}`;
+    }
+    return cardImg;
+  };
+
   return (
     <Link 
       to={`/excursion/${excursion.excursion_id}`}
@@ -115,11 +127,17 @@ const ExcursionCard = ({ excursion }) => {
       style={{ textDecoration: 'none', color: 'inherit' }}
     >
       <div className="excursion-card">
-        <img 
-          src={excursion.image || cardImg} 
-          alt={excursion.title} 
-          className="excursion-image" 
-        />
+        <div className="excursion-image-wrapper">
+          <img 
+            src={getImageUrl()} 
+            alt={excursion.title} 
+            className="excursion-image" 
+            onError={(e) => {
+              // Если изображение не загрузилось, используем дефолтное
+              e.target.src = cardImg;
+            }}
+          />
+        </div>
         <div className="excursion-info">
           <h2 className="excursion-title">{excursion.title}</h2>
           <p className="excursion-description">{excursion.short_description}</p>
@@ -419,6 +437,13 @@ const FiltersPanel = ({
 
 // ==================== КОМПОНЕНТ СПИСКА ЭКСКУРСИЙ ====================
 const ExcursionList = ({ excursionCards, sort, onSortChange }) => {
+  const [showAll, setShowAll] = useState(false);
+  const MAX_VISIBLE = 16;
+
+  // Сбрасываем состояние при изменении списка карточек
+  React.useEffect(() => {
+    setShowAll(false);
+  }, [excursionCards.length]);
 
     // создаём отсортированную копию массива
 const sortedCards = React.useMemo(() => {
@@ -432,6 +457,9 @@ const sortedCards = React.useMemo(() => {
   });
 }, [excursionCards, sort]);
 
+  // Определяем, какие карточки показывать
+  const visibleCards = showAll ? sortedCards : sortedCards.slice(0, MAX_VISIBLE);
+  const hasMore = sortedCards.length > MAX_VISIBLE;
 
   return (
     <section className="excursion-results">
@@ -447,10 +475,18 @@ const sortedCards = React.useMemo(() => {
       </div>
 
       <div className="excursion-list">
-        {sortedCards.map((ex) => (
+        {visibleCards.map((ex) => (
           <ExcursionCard key={ex.excursion_id} excursion={ex} />
         ))}
       </div>
+
+      {hasMore && !showAll && (
+        <div className="show-all-wrapper">
+          <button className="show-all-button" onClick={() => setShowAll(true)}>
+            Посмотреть все экскурсии
+          </button>
+        </div>
+      )}
     </section>
   );
 };

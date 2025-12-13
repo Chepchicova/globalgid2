@@ -109,12 +109,28 @@ function getExcursionCards() {
     $stmt = $conn->query($sql);
     $excursions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Получаем первое изображение для каждой экскурсии
+    $imageSql = "
+        SELECT excursion_id, image_path 
+        FROM Excursion_Images 
+        WHERE excursion_id = ? 
+        ORDER BY image_id ASC 
+        LIMIT 1
+    ";
+    $imageStmt = $conn->prepare($imageSql);
+    $defaultImage = "uploads/excursions/default.png";
+
     foreach ($excursions as &$ex) {
         // обрезаем описание
         $ex['short_description'] = mb_substr($ex['description'], 0, 100) . "...";
 
         // считаем старую цену (фиксированные 20% сверху)
         $ex['old_price'] = round($ex['price'] * 1.2);
+        
+        // Получаем первое изображение экскурсии
+        $imageStmt->execute([$ex['excursion_id']]);
+        $image = $imageStmt->fetch(PDO::FETCH_ASSOC);
+        $ex['image'] = $image ? $image['image_path'] : $defaultImage;
     }
 
     echo json_encode($excursions, JSON_UNESCAPED_UNICODE);
@@ -349,12 +365,28 @@ if (isset($input['maxDuration']) && $input['maxDuration'] !== '') {
         $stmt->execute($params);
         $excursions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Получаем первое изображение для каждой экскурсии
+        $imageSql = "
+            SELECT excursion_id, image_path 
+            FROM Excursion_Images 
+            WHERE excursion_id = ? 
+            ORDER BY image_id ASC 
+            LIMIT 1
+        ";
+        $imageStmt = $conn->prepare($imageSql);
+        $defaultImage = "uploads/excursions/default.png";
+
         foreach ($excursions as &$ex) {
             $ex['short_description'] = mb_strlen($ex['description']) > 100 
                 ? mb_substr($ex['description'], 0, 100) . "..." 
                 : $ex['description'];
             $percent = rand(20, 40);
             $ex['old_price'] = round($ex['price'] * (1 + $percent / 100));
+            
+            // Получаем первое изображение экскурсии
+            $imageStmt->execute([$ex['excursion_id']]);
+            $image = $imageStmt->fetch(PDO::FETCH_ASSOC);
+            $ex['image'] = $image ? $image['image_path'] : $defaultImage;
         }
 
         $response = [
