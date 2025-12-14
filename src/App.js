@@ -128,7 +128,7 @@ return (
             } 
           />
           {/* НОВЫЙ МАРШРУТ ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ЭКСКУРСИИ */}
-          <Route path="/excursion/:id" element={<ExcursionDetail user={user} />} />
+          <Route path="/excursion/:id" element={<ExcursionDetail user={user} onLoginSuccess={handleLoginSuccess} />} />
           {/* МАРШРУТ ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ГИДА */}
           <Route path="/guide/:id" element={<GuideDetail user={user} />} />
           

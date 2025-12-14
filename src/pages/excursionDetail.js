@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import "../styles/excursionDetail.css";
+import AuthModal from "../components/AuthModal";
 
 const API_BASE = "http://localhost/globalgid2/public/backend";
 
-const ExcursionDetail = () => {
+const ExcursionDetail = ({ user, onLoginSuccess }) => {
   const { id } = useParams();
   const [excursion, setExcursion] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,10 @@ const ExcursionDetail = () => {
   const [participants, setParticipants] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   useEffect(() => {
     const fetchExcursionDetail = async () => {
@@ -60,6 +65,13 @@ const ExcursionDetail = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isModalOpen]);
+
+  // Обновляем максимальное значение при изменении доступных мест
+  useEffect(() => {
+    if (excursion?.data?.count_seats && participants > excursion.data.count_seats) {
+      setParticipants(excursion.data.count_seats || 1);
+    }
+  }, [excursion?.data?.count_seats]);
 
   if (loading) {
     return (
@@ -142,18 +154,91 @@ const ExcursionDetail = () => {
   const displayImages = images.slice(0, 5);
   const imageCount = displayImages.length;
 
-    // Функции для управления счетчиком
-    const increaseParticipants = () => {
-      if (excursion && participants < excursion.data.count_seats) {
-        setParticipants(prev => prev + 1);
+  // Функции для управления счетчиком
+  const increaseParticipants = () => {
+    if (excursion && participants < excursion.data.count_seats) {
+      setParticipants(prev => prev + 1);
+    }
+  };
+
+  const decreaseParticipants = () => {
+    if (participants > 1) {
+      setParticipants(prev => prev - 1);
+    }
+  };
+
+  // Функция для бронирования экскурсии
+  const handleBooking = async () => {
+    // Проверка авторизации
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    if (!excursion || !excursion.data) {
+      setBookingError('Ошибка: данные экскурсии не загружены');
+      return;
+    }
+
+    // Проверка доступности мест
+    if (participants > excursion.data.count_seats) {
+      setBookingError(`Недостаточно мест. Доступно: ${excursion.data.count_seats}`);
+      return;
+    }
+
+    setBookingLoading(true);
+    setBookingError(null);
+    setBookingSuccess(false);
+
+    try {
+      const response = await fetch(`${API_BASE}/booking.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          excursion_id: parseInt(id),
+          seats: participants
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBookingSuccess(true);
+        // Обновляем количество доступных мест
+        setExcursion(prev => ({
+          ...prev,
+          data: {
+            ...prev.data,
+            count_seats: data.remaining_seats
+          }
+        }));
+        // Сбрасываем счетчик участников
+        setParticipants(1);
+        // Скрываем сообщение об успехе через 3 секунды
+        setTimeout(() => {
+          setBookingSuccess(false);
+        }, 3000);
+      } else {
+        setBookingError(data.error || 'Ошибка при бронировании');
       }
-    };
-  
-    const decreaseParticipants = () => {
-      if (participants > 1) {
-        setParticipants(prev => prev - 1);
-      }
-    };
+    } catch (err) {
+      console.error('Ошибка бронирования:', err);
+      setBookingError('Ошибка сети. Попробуйте позже.');
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // Обработчик успешного входа
+  const handleAuthSuccess = (userData) => {
+    setIsAuthModalOpen(false);
+    if (onLoginSuccess) {
+      onLoginSuccess(userData);
+    }
+  };
 
   return (
     <div className="excursion-detail-container">
@@ -454,8 +539,40 @@ const ExcursionDetail = () => {
               </div>
             </div>
 
+            {/* Сообщения об ошибке и успехе */}
+            {bookingError && (
+              <div className="booking-error" style={{
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: '#fee',
+                color: '#c33',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}>
+                {bookingError}
+              </div>
+            )}
+            {bookingSuccess && (
+              <div className="booking-success" style={{
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: '#efe',
+                color: '#3c3',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}>
+                Экскурсия успешно забронирована!
+              </div>
+            )}
+
             {/* Кнопка бронирования */}
-            <button className="book-button">Забронировать</button>
+            <button 
+              className="book-button" 
+              onClick={handleBooking}
+              disabled={bookingLoading || bookingSuccess || (excursion && excursion.data.count_seats === 0)}
+            >
+              {bookingLoading ? 'Бронирование...' : (excursion && excursion.data.count_seats === 0 ? 'Мест нет' : 'Забронировать')}
+            </button>
 
             {/* Информация об отмене */}
             <div className="cancellation-info">
@@ -502,6 +619,15 @@ const ExcursionDetail = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Модальное окно авторизации */}
+      {isAuthModalOpen && (
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onLoginSuccess={handleAuthSuccess}
+        />
       )}
     </div>
   );

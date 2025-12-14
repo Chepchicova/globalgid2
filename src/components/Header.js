@@ -179,7 +179,15 @@ const handleLoginSuccess = (userData) => {
                       Избранное
                     </a>
                     
-                    <a href="/my-bookings" className="user-menu-item">
+                    <a 
+                      href="/profile" 
+                      className="user-menu-item"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/profile', { state: { activeTab: 'bookings' } });
+                        setShowUserMenu(false);
+                      }}
+                    >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M14 0H2C0.89 0 0 0.89 0 2V14C0 15.11 0.89 16 2 16H14C15.11 16 16 15.11 16 14V2C16 0.89 15.11 0 14 0ZM14 14H2V2H14V14ZM4 12H12V10H4V12ZM4 9H12V7H4V9ZM4 6H12V4H4V6Z" fill="currentColor"/>
                       </svg>

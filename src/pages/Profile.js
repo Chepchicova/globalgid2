@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import "../styles/profile.css";
 
 export default function Profile({ onLogout }) {
     const [user, setUser] = useState(null);
-    const [activeTab, setActiveTab] = useState('profile');
+    const location = useLocation();
+    const initialTab = location.state?.activeTab || 'profile';
+    const [activeTab, setActiveTab] = useState(initialTab);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -200,10 +202,7 @@ export default function Profile({ onLogout }) {
                 )}
                 
                 {activeTab === 'bookings' && (
-                    <div className="pg-tab-content">
-                        <h2>Мои бронирования</h2>
-                        <p>Здесь будет история ваших бронирований.</p>
-                    </div>
+                    <BookingsTab />
                 )}
                 
                 {activeTab === 'settings' && (
@@ -338,6 +337,228 @@ function ProfileTab({ user, onUpdate }) {
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+// Компонент вкладки бронирований
+function BookingsTab() {
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [bookingToCancel, setBookingToCancel] = useState(null);
+    const API_BASE = "http://localhost/globalgid2/public";
+
+    useEffect(() => {
+        loadBookings();
+    }, []);
+
+    const loadBookings = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`${API_BASE}/backend/get_user_bookings.php`, {
+                credentials: "include",
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                setBookings(data.bookings || []);
+            } else {
+                setError(data.error || 'Ошибка загрузки бронирований');
+            }
+        } catch (err) {
+            console.error("Ошибка загрузки бронирований:", err);
+            setError('Ошибка сети');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCancelClick = (bookingId) => {
+        setBookingToCancel(bookingId);
+        setCancelModalOpen(true);
+    };
+
+    const handleCancelConfirm = async () => {
+        if (!bookingToCancel) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/backend/cancel_booking.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({ booking_id: bookingToCancel })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Обновляем список бронирований
+                loadBookings();
+                setCancelModalOpen(false);
+                setBookingToCancel(null);
+            } else {
+                alert(data.error || 'Ошибка при отмене бронирования');
+            }
+        } catch (err) {
+            console.error("Ошибка отмены бронирования:", err);
+            alert('Ошибка сети');
+        }
+    };
+
+    const handleCancelModalClose = () => {
+        setCancelModalOpen(false);
+        setBookingToCancel(null);
+    };
+
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) {
+            return "http://localhost/globalgid2/public/uploads/excursions/default.png";
+        }
+        return `http://localhost/globalgid2/public/${imagePath}`;
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const isPastDate = (dateString) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const eventDate = new Date(dateString);
+        return eventDate < today;
+    };
+
+    if (loading) {
+        return (
+            <div className="pg-tab-content">
+                <div className="pg-tab-header">
+                    <h1>Мои бронирования</h1>
+                    <p className="pg-welcome-text">Управляйте вашими забронированными экскурсиями</p>
+                </div>
+                <div className="pg-loading">
+                    <p>Загрузка бронирований...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="pg-tab-content">
+                <div className="pg-tab-header">
+                    <h1>Мои бронирования</h1>
+                    <p className="pg-welcome-text">Управляйте вашими забронированными экскурсиями</p>
+                </div>
+                <div className="pg-error">
+                    <p>{error}</p>
+                    <button onClick={loadBookings} className="pg-retry-btn">
+                        Попробовать снова
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pg-tab-content">
+            <div className="pg-tab-header">
+                <h1>Мои бронирования</h1>
+                <p className="pg-welcome-text">Управляйте вашими забронированными экскурсиями</p>
+            </div>
+
+            {bookings.length === 0 ? (
+                <div className="pg-empty-state">
+                    <p>У вас пока нет забронированных экскурсий</p>
+                </div>
+            ) : (
+                <div className="pg-bookings-list">
+                    {bookings.map((booking) => (
+                        <div key={booking.booking_id} className="pg-booking-card">
+                            <div className="pg-booking-image">
+                                <img 
+                                    src={getImageUrl(booking.image_path)} 
+                                    alt={booking.title}
+                                    onError={(e) => {
+                                        e.target.src = "http://localhost/globalgid2/public/uploads/excursions/default.png";
+                                    }}
+                                />
+                            </div>
+                            <div className="pg-booking-info">
+                                <h3>{booking.title}</h3>
+                                <div className="pg-booking-details">
+                                    <p><strong>Гид:</strong> {booking.firstname_guide} {booking.lastname_guide}</p>
+                                    <p><strong>Место:</strong> {booking.city}, {booking.country}</p>
+                                    <p><strong>Дата экскурсии:</strong> {formatDate(booking.date_event)}</p>
+                                    <p><strong>Длительность:</strong> {booking.duration} часов</p>
+                                    <p><strong>Количество мест:</strong> {booking.seats}</p>
+                                    <p><strong>Цена:</strong> ₽{parseInt(booking.price).toLocaleString()}</p>
+                                    <p><strong>Дата бронирования:</strong> {formatDate(booking.booking_date)}</p>
+                                    {isPastDate(booking.date_event) && (
+                                        <p className="pg-past-date">Экскурсия уже прошла</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="pg-booking-actions">
+                                {booking.can_cancel && !isPastDate(booking.date_event) ? (
+                                    <button
+                                        className="pg-cancel-btn"
+                                        onClick={() => handleCancelClick(booking.booking_id)}
+                                    >
+                                        Отменить бронирование
+                                    </button>
+                                ) : (
+                                    <p className="pg-cannot-cancel">
+                                        {isPastDate(booking.date_event) 
+                                            ? 'Экскурсия уже прошла' 
+                                            : 'Время для отмены истекло'}
+                                    </p>
+                                )}
+                                <Link 
+                                    to={`/excursion/${booking.excursion_id}`}
+                                    className="pg-view-btn"
+                                >
+                                    Посмотреть детали
+                                </Link>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Модальное окно подтверждения отмены */}
+            {cancelModalOpen && (
+                <div className="pg-cancel-modal-overlay" onClick={handleCancelModalClose}>
+                    <div className="pg-cancel-modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Отменить бронирование?</h3>
+                        <p>Вы уверены, что хотите отменить это бронирование? Это действие нельзя отменить.</p>
+                        <div className="pg-cancel-modal-actions">
+                            <button 
+                                className="pg-modal-btn pg-modal-btn-cancel"
+                                onClick={handleCancelModalClose}
+                            >
+                                Нет
+                            </button>
+                            <button 
+                                className="pg-modal-btn pg-modal-btn-confirm"
+                                onClick={handleCancelConfirm}
+                            >
+                                Да, отменить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
