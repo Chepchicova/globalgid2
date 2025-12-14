@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../styles/header.css";
 import AuthModal from "./AuthModal";
 
@@ -101,18 +101,19 @@ const handleLoginSuccess = (userData) => {
         <div className="nav-button">
           <nav className="nav">
             <ul className="nav-links">
-              <li><a href="/" className="menu-item">Главная</a></li>
+              <li><Link to="/" className="menu-item">Главная</Link></li>
               {user?.role !== 'admin' && (
                 <>
-                  <li><a href="/about" className="menu-item">О проекте</a></li>
-                  <li><a href="/help" className="menu-item">Помощь</a></li>
-                  <li><a href="/contacts" className="menu-item">Контакты</a></li>
+                  <li><Link to="/about" className="menu-item">О проекте</Link></li>
+                  <li><Link to="/help" className="menu-item">Помощь</Link></li>
+                  <li><Link to="/contacts" className="menu-item">Контакты</Link></li>
                 </>
               )}
               {user?.role === 'admin' && (
                 <>
-                  <li><a href="/admin/excursions" className="menu-item">Экскурсии</a></li>
-                  <li><a href="/admin/guides" className="menu-item">Гиды</a></li>
+                  <li><Link to="/admin/excursions" className="menu-item">Экскурсии</Link></li>
+                  <li><Link to="/admin/guides" className="menu-item">Гиды</Link></li>
+                  <li><Link to="/admin/requests" className="menu-item">Заявки</Link></li>
                 </>
               )}
             </ul> 
@@ -172,7 +173,15 @@ const handleLoginSuccess = (userData) => {
                       Мой профиль
                     </a>
                     
-                    <a href="/favorites" className="user-menu-item">
+                    <a 
+                      href="/profile" 
+                      className="user-menu-item"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/profile', { state: { activeTab: 'favorites' } });
+                        setShowUserMenu(false);
+                      }}
+                    >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M8 14.27L13.15 9.12C13.91 8.36 14.3 7.31 14.3 6.22C14.3 4.05 12.55 2.3 10.38 2.3C9.29 2.3 8.24 2.69 7.48 3.45L8 4L8.52 3.45C7.76 2.69 6.71 2.3 5.62 2.3C3.45 2.3 1.7 4.05 1.7 6.22C1.7 7.31 2.09 8.36 2.85 9.12L8 14.27Z" fill="currentColor"/>
                       </svg>

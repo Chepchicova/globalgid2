@@ -18,6 +18,8 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   useEffect(() => {
     const fetchExcursionDetail = async () => {
@@ -45,6 +47,32 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
 
     fetchExcursionDetail();
   }, [id]);
+
+  // Проверка, находится ли экскурсия в избранном
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (!user) {
+        setIsFavorite(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/check_favorite.php?excursion_id=${id}`, {
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          setIsFavorite(data.is_favorite);
+        }
+      } catch (err) {
+        console.error('Ошибка проверки избранного:', err);
+      }
+    };
+
+    checkFavorite();
+  }, [id, user]);
 
   // Закрытие модального окна по Escape
   useEffect(() => {
@@ -240,6 +268,42 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
     }
   };
 
+  // Функция для переключения избранного
+  const handleToggleFavorite = async () => {
+    // Проверка авторизации
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    setFavoriteLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/toggle_favorite.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          excursion_id: parseInt(id)
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFavorite(data.is_favorite);
+      } else {
+        console.error('Ошибка при изменении избранного:', data.error);
+      }
+    } catch (err) {
+      console.error('Ошибка сети при изменении избранного:', err);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   return (
     <div className="excursion-detail-container">
       {/* Кнопка назад */}
@@ -254,11 +318,27 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
         <div className="title-wrapper">
           <h1 className="excursion-title">{excursionData.title}</h1>
         </div>
-        <button className="favorite-button">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.9849 5C16.2412 5 14.2021 6.97669 13.1099 8.25C12.0176 6.97669 9.97844 5 8.23486 5C5.14845 5 3.35986 7.40736 3.35986 10.4712C3.35986 13.8654 6.60986 17.4584 13.1099 21.25C19.6099 17.4584 22.8599 13.9375 22.8599 10.6875C22.8599 7.62359 21.0712 5 17.9849 5Z" stroke="#242A37" strokeWidth="1.48571" strokeLinecap="round" strokeLinejoin="round"/>
+        <button 
+          className="favorite-button"
+          onClick={handleToggleFavorite}
+          disabled={favoriteLoading}
+        >
+          <svg 
+            width="26" 
+            height="26" 
+            viewBox="0 0 26 26" 
+            fill={isFavorite ? "#242A37" : "none"} 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              d="M17.9849 5C16.2412 5 14.2021 6.97669 13.1099 8.25C12.0176 6.97669 9.97844 5 8.23486 5C5.14845 5 3.35986 7.40736 3.35986 10.4712C3.35986 13.8654 6.60986 17.4584 13.1099 21.25C19.6099 17.4584 22.8599 13.9375 22.8599 10.6875C22.8599 7.62359 21.0712 5 17.9849 5Z" 
+              stroke="#242A37" 
+              strokeWidth="1.48571" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            />
           </svg>
-          Сохранить
+          {favoriteLoading ? 'Сохранение...' : 'Сохранить'}
         </button>
       </header>
 

@@ -1,5 +1,5 @@
 <?php
-// Файл для получения бронирований пользователя
+// Файл для полжечения бронирований пользователя
 require_once "auth/cors.php";
 session_start();
 header("Content-Type: application/json; charset=utf-8");
@@ -36,6 +36,7 @@ try {
             e.duration,
             e.date_event,
             e.status as excursion_status,
+            e.guide_id,
             l.city,
             l.country,
             g.firstname_guide,
@@ -53,13 +54,25 @@ try {
     $stmt->execute([$user_id]);
     $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Добавляем информацию о возможности отмены (в течение 24 часов)
+    // Добавляем информацию о возможности отмены (в течение 24 часов) и проверяем наличие отзыва
     $currentTime = time();
     foreach ($bookings as &$booking) {
         $bookingDate = strtotime($booking['booking_date']);
         $hoursSinceBooking = ($currentTime - $bookingDate) / 3600;
         $booking['can_cancel'] = $hoursSinceBooking <= 24;
         $booking['hours_remaining'] = max(0, 24 - $hoursSinceBooking);
+        
+        // Проверяем, оставил ли пользователь ее отзыв на этого гида
+        $reviewCheckSql = "
+            SELECT review_id 
+            FROM Reviews 
+            WHERE user_id = ? AND guide_id = ?
+            LIMIT 1
+        ";
+        $reviewStmt = $conn->prepare($reviewCheckSql);
+        $reviewStmt->execute([$user_id, $booking['guide_id']]);
+        $existingReview = $reviewStmt->fetch(PDO::FETCH_ASSOC);
+        $booking['has_review'] = !empty($existingReview);
     }
     
     echo json_encode([

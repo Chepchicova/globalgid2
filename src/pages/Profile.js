@@ -195,10 +195,7 @@ export default function Profile({ onLogout }) {
                 )}
                 
                 {activeTab === 'favorites' && (
-                    <div className="pg-tab-content">
-                        <h2>Избранное</h2>
-                        <p>Здесь будут ваши сохраненные экскурсии.</p>
-                    </div>
+                    <FavoritesTab />
                 )}
                 
                 {activeTab === 'bookings' && (
@@ -348,6 +345,11 @@ function BookingsTab() {
     const [error, setError] = useState(null);
     const [cancelModalOpen, setCancelModalOpen] = useState(false);
     const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [reviewBooking, setReviewBooking] = useState(null);
+    const [reviewRating, setReviewRating] = useState(0);
+    const [reviewComment, setReviewComment] = useState('');
+    const [reviewSubmitting, setReviewSubmitting] = useState(false);
     const API_BASE = "http://localhost/globalgid2/public";
 
     useEffect(() => {
@@ -414,6 +416,59 @@ function BookingsTab() {
     const handleCancelModalClose = () => {
         setCancelModalOpen(false);
         setBookingToCancel(null);
+    };
+
+    const handleReviewClick = (booking) => {
+        setReviewBooking(booking);
+        setReviewRating(0);
+        setReviewComment('');
+        setReviewModalOpen(true);
+    };
+
+    const handleReviewModalClose = () => {
+        setReviewModalOpen(false);
+        setReviewBooking(null);
+        setReviewRating(0);
+        setReviewComment('');
+    };
+
+    const handleReviewSubmit = async () => {
+        if (!reviewBooking || reviewRating === 0 || !reviewComment.trim()) {
+            alert('Пожалуйста, выберите рейтинг и оставьте комментарий');
+            return;
+        }
+
+        try {
+            setReviewSubmitting(true);
+            const response = await fetch(`${API_BASE}/backend/submit_review.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    guide_id: reviewBooking.guide_id,
+                    rating: reviewRating,
+                    comment: reviewComment.trim()
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Обновляем список бронирований
+                loadBookings();
+                handleReviewModalClose();
+                alert('Отзыв успешно сохранен');
+            } else {
+                alert(data.error || 'Ошибка при сохранении отзыва');
+            }
+        } catch (err) {
+            console.error("Ошибка сохранения отзыва:", err);
+            alert('Ошибка сети');
+        } finally {
+            setReviewSubmitting(false);
+        }
     };
 
     const getImageUrl = (imagePath) => {
@@ -483,8 +538,13 @@ function BookingsTab() {
                 </div>
             ) : (
                 <div className="pg-bookings-list">
-                    {bookings.map((booking) => (
-                        <div key={booking.booking_id} className="pg-booking-card">
+                    {bookings.map((booking) => {
+                        const isPast = isPastDate(booking.date_event);
+                        return (
+                        <div 
+                            key={booking.booking_id} 
+                            className={`pg-booking-card ${isPast ? 'pg-booking-past' : ''}`}
+                        >
                             <div className="pg-booking-image">
                                 <img 
                                     src={getImageUrl(booking.image_path)} 
@@ -504,13 +564,23 @@ function BookingsTab() {
                                     <p><strong>Количество мест:</strong> {booking.seats}</p>
                                     <p><strong>Цена:</strong> ₽{parseInt(booking.price).toLocaleString()}</p>
                                     <p><strong>Дата бронирования:</strong> {formatDate(booking.booking_date)}</p>
-                                    {isPastDate(booking.date_event) && (
-                                        <p className="pg-past-date">Экскурсия уже прошла</p>
-                                    )}
                                 </div>
                             </div>
                             <div className="pg-booking-actions">
-                                {booking.can_cancel && !isPastDate(booking.date_event) ? (
+                                {isPast ? (
+                                    <>
+                                        {!booking.has_review ? (
+                                            <button
+                                                className="pg-review-btn"
+                                                onClick={() => handleReviewClick(booking)}
+                                            >
+                                                Оставить отзыв
+                                            </button>
+                                        ) : (
+                                            <p className="pg-review-submitted">Отзыв оставлен</p>
+                                        )}
+                                    </>
+                                ) : booking.can_cancel ? (
                                     <button
                                         className="pg-cancel-btn"
                                         onClick={() => handleCancelClick(booking.booking_id)}
@@ -519,9 +589,7 @@ function BookingsTab() {
                                     </button>
                                 ) : (
                                     <p className="pg-cannot-cancel">
-                                        {isPastDate(booking.date_event) 
-                                            ? 'Экскурсия уже прошла' 
-                                            : 'Время для отмены истекло'}
+                                        Время для отмены истекло
                                     </p>
                                 )}
                                 <Link 
@@ -532,7 +600,8 @@ function BookingsTab() {
                                 </Link>
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
@@ -557,6 +626,275 @@ function BookingsTab() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Модальное окно для оставления отзыва */}
+            {reviewModalOpen && reviewBooking && (
+                <div className="pg-review-modal-overlay" onClick={handleReviewModalClose}>
+                    <div className="pg-review-modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Оставить отзыв</h3>
+                        <p className="pg-review-guide-name">
+                            Оцените гида: {reviewBooking.firstname_guide} {reviewBooking.lastname_guide}
+                        </p>
+                        
+                        <div className="pg-review-rating">
+                            <label>Рейтинг:</label>
+                            <div className="pg-stars-container">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        type="button"
+                                        className={`pg-star-btn ${star <= reviewRating ? 'pg-star-filled' : ''}`}
+                                        onClick={() => setReviewRating(star)}
+                                        disabled={reviewSubmitting}
+                                    >
+                                        ★
+                                    </button>
+                                ))}
+                            </div>
+                            {reviewRating > 0 && (
+                                <span className="pg-rating-text">
+                                    {reviewRating === 1 && 'Плохо'}
+                                    {reviewRating === 2 && 'Неудовлетворительно'}
+                                    {reviewRating === 3 && 'Удовлетворительно'}
+                                    {reviewRating === 4 && 'Хорошо'}
+                                    {reviewRating === 5 && 'Отлично'}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="pg-review-comment">
+                            <label htmlFor="review-comment">Комментарий:</label>
+                            <textarea
+                                id="review-comment"
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="Оставьте ваш отзыв о гиде..."
+                                rows="5"
+                                disabled={reviewSubmitting}
+                            />
+                        </div>
+
+                        <div className="pg-review-modal-actions">
+                            <button 
+                                className="pg-modal-btn pg-modal-btn-cancel"
+                                onClick={handleReviewModalClose}
+                                disabled={reviewSubmitting}
+                            >
+                                Отмена
+                            </button>
+                            <button 
+                                className="pg-modal-btn pg-modal-btn-submit"
+                                onClick={handleReviewSubmit}
+                                disabled={reviewSubmitting || reviewRating === 0 || !reviewComment.trim()}
+                            >
+                                {reviewSubmitting ? 'Сохранение...' : 'Отправить отзыв'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Компонент вкладки избранного
+function FavoritesTab() {
+    const [favorites, setFavorites] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const API_BASE = "http://localhost/globalgid2/public";
+
+    useEffect(() => {
+        loadFavorites();
+    }, []);
+
+    const loadFavorites = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch(`${API_BASE}/backend/get_favorites.php`, {
+                credentials: "include",
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                setFavorites(data.favorites || []);
+            } else {
+                setError(data.error || 'Ошибка загрузки избранного');
+            }
+        } catch (err) {
+            console.error("Ошибка загрузки избранного:", err);
+            setError('Ошибка сети');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) {
+            return "http://localhost/globalgid2/public/uploads/excursions/default.png";
+        }
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+        return `http://localhost/globalgid2/public/${imagePath}`;
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="pg-tab-content">
+                <div className="pg-tab-header">
+                    <h1>Избранное</h1>
+                    <p className="pg-welcome-text">Ваши сохраненные экскурсии</p>
+                </div>
+                <div className="pg-loading">
+                    <p>Загрузка избранного...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="pg-tab-content">
+                <div className="pg-tab-header">
+                    <h1>Избранное</h1>
+                    <p className="pg-welcome-text">Ваши сохраненные экскурсии</p>
+                </div>
+                <div className="pg-error">
+                    <p>{error}</p>
+                    <button onClick={loadFavorites} className="pg-retry-btn">
+                        Попробовать снова
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="pg-tab-content">
+            <div className="pg-tab-header">
+                <h1>Избранное</h1>
+                <p className="pg-welcome-text">Ваши сохраненные экскурсии</p>
+            </div>
+
+            {favorites.length === 0 ? (
+                <div className="pg-empty-state">
+                    <p>У вас пока нет избранных экскурсий</p>
+                    <p className="pg-empty-hint">Добавляйте экскурсии в избранное, нажимая на кнопку "Сохранить" на странице деталей экскурсии</p>
+                </div>
+            ) : (
+                <div className="pg-favorites-list" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px',
+                    marginTop: '20px'
+                }}>
+                    {favorites.map((excursion) => (
+                        <Link 
+                            key={excursion.excursion_id} 
+                            to={`/excursion/${excursion.excursion_id}`}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                        >
+                            <div className="pg-favorite-card" style={{
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '8px',
+                                overflow: 'hidden',
+                                backgroundColor: '#fff',
+                                transition: 'box-shadow 0.2s',
+                                cursor: 'pointer'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'}
+                            onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+                            >
+                                <div style={{ width: '100%', height: '200px', overflow: 'hidden' }}>
+                                    <img 
+                                        src={getImageUrl(excursion.image_path)} 
+                                        alt={excursion.title}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }}
+                                        onError={(e) => {
+                                            e.target.src = "http://localhost/globalgid2/public/uploads/excursions/default.png";
+                                        }}
+                                    />
+                                </div>
+                                <div style={{ padding: '16px' }}>
+                                    <h3 style={{ 
+                                        margin: '0 0 8px 0',
+                                        fontSize: '18px',
+                                        fontWeight: '600',
+                                        color: '#242A37'
+                                    }}>
+                                        {excursion.title}
+                                    </h3>
+                                    {excursion.short_description && (
+                                        <p style={{
+                                            margin: '0 0 12px 0',
+                                            fontSize: '14px',
+                                            color: '#6B7280',
+                                            lineHeight: '1.5',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {excursion.short_description}
+                                        </p>
+                                    )}
+                                    <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        fontSize: '14px',
+                                        color: '#6B7280'
+                                    }}>
+                                        <div>
+                                            <strong>Гид:</strong> {excursion.guide_name}
+                                        </div>
+                                        <div>
+                                            <strong>Место:</strong> {excursion.city}, {excursion.country}
+                                        </div>
+                                        <div>
+                                            <strong>Дата:</strong> {formatDate(excursion.date_event)}
+                                        </div>
+                                        <div>
+                                            <strong>Длительность:</strong> {excursion.duration} часов
+                                        </div>
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginTop: '8px',
+                                            paddingTop: '8px',
+                                            borderTop: '1px solid #e2e8f0'
+                                        }}>
+                                            <span style={{ fontSize: '16px', fontWeight: '600', color: '#242A37' }}>
+                                                ₽{parseInt(excursion.price).toLocaleString()}
+                                            </span>
+                                            <span style={{ fontSize: '14px', color: '#6B7280' }}>
+                                                ★ {parseFloat(excursion.avg_rating || 0).toFixed(1)} ({excursion.reviews_count || 0})
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
             )}
         </div>

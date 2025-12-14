@@ -8,10 +8,14 @@ import GuideDetail from "./pages/GuideDetail";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Profile from "./pages/Profile";
+import About from "./pages/About";
+import Help from "./pages/Help";
+import Contacts from "./pages/Contacts";
 import AdminExcursions from "./pages/AdminExcursions";
 import AdminExcursionForm from "./pages/AdminExcursionForm";
 import AdminGuides from "./pages/AdminGuides";
 import AdminGuideForm from "./pages/AdminGuideForm";
+import AdminRequests from "./pages/AdminRequests";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -119,6 +123,9 @@ return (
           <Route path="/" element={<Home user={user} />} />
           <Route path="/excursions" element={<Excursions user={user} />} />
           <Route path="/guides" element={<Guides user={user} />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/contacts" element={<Contacts />} />
           <Route 
             path="/profile" 
             element={
@@ -139,6 +146,7 @@ return (
           <Route path="/admin/guides" element={<AdminGuides user={user} />} />
           <Route path="/admin/guides/create" element={<AdminGuideForm user={user} />} />
           <Route path="/admin/guides/edit/:id" element={<AdminGuideForm user={user} />} />
+          <Route path="/admin/requests" element={<AdminRequests user={user} />} />
         </Routes>
       </main>
       <Footer />
