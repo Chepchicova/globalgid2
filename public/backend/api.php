@@ -51,6 +51,7 @@ switch ($method) {
         getExcursionsFiltered(); // отфильтрованные
         break;
 
+
     // Администраторские методы
     case 'getAdminExcursions':
         getAdminExcursions();
@@ -81,7 +82,11 @@ switch ($method) {
         break;
     
     case 'getAdminGuides':
-        getAdminGuides();
+        getAdminGuidesList();
+        break;
+    
+    case 'getAdminGuidesList':
+        getAdminGuidesList();
         break;
     
     case 'getAdminLocations':

@@ -143,7 +143,7 @@ const ExcursionCard = ({ excursion }) => {
           <p className="excursion-description">{excursion.short_description}</p>
           <div className="excursion-meta">
             <span className="rating">
-              ⭐ {parseFloat(excursion.avg_rating || 0).toFixed(1)} ({excursion.reviews_count} отзывов)
+            ★ {parseFloat(excursion.avg_rating || 0).toFixed(1)} ({excursion.reviews_count} отзывов)
             </span>
             <span className="guide">{excursion.guide_name}</span>
           </div>

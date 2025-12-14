@@ -366,7 +366,7 @@ const ExcursionDetail = () => {
                     <div key={review.review_id} className="review-card">
                       <div className="review-header">
                         <span className="review-author">{review.user_name}</span>
-                        <span className="review-rating">⭐ {review.rating}/5</span>
+                        <span className="review-rating">★ {review.rating}/5</span>
                       </div>
                       <p className="review-comment">{review.comment}</p>
                       <span className="review-date">

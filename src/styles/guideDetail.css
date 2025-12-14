@@ -1,0 +1,397 @@
+/* Основные стили страницы */
+.guide-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  padding-top: 100px;
+  background-color: rgba(241, 243, 248, 1);
+  min-height: 100vh;
+}
+
+/* Кнопка назад */
+.back-section {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  color: #000000;
+  text-decoration: none;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.back-link:hover {
+  opacity: 0.7;
+}
+
+/* Основной контент */
+.guide-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.guide-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Заголовок с фото и именем */
+.guide-header {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 30px;
+  align-items: flex-start;
+}
+
+.guide-photo-wrapper {
+  width: 200px;
+  height: 200px;
+  min-width: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.guide-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guide-header-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-name {
+  font-size: 32px;
+  margin: 0;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.guide-location {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0;
+}
+
+.guide-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+}
+
+.rating-stars {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.rating-count {
+  color: #64748b;
+}
+
+/* Секции контента */
+.content-section {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.content-section:last-child {
+  border-bottom: none;
+}
+
+.content-section h2 {
+  font-size: 24px;
+  margin: 0 0 20px 0;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+/* Специализации */
+.specializations-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.specialization-tag {
+  background: #e2e8f0;
+  color: #1e293b;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Языки */
+.languages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.language-tag {
+  background: #c6e4f0;
+  color: #1e293b;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Биография */
+.bio-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #334155;
+  margin: 0;
+}
+
+/* Экскурсии гида */
+.guide-excursions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.guide-excursion-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guide-excursion-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.guide-excursion-image-wrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.guide-excursion-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.guide-excursion-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.guide-excursion-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.guide-excursion-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.guide-excursion-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.guide-excursion-location,
+.guide-excursion-duration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.guide-excursion-price {
+  font-weight: 600;
+  color: #1e293b;
+  margin-left: auto;
+}
+
+/* Отзывы */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.review-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.review-author {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.review-rating {
+  color: #f59e0b;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.review-comment {
+  color: #334155;
+  line-height: 1.6;
+  margin: 10px 0;
+  font-size: 15px;
+}
+
+.review-date {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.no-reviews {
+  color: #64748b;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+}
+
+.show-all-reviews,
+.hide-reviews {
+  background: #1e293b;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  transition: background 0.2s ease;
+}
+
+.show-all-reviews:hover,
+.hide-reviews:hover {
+  background: #334155;
+}
+
+/* Состояния загрузки и ошибок */
+.loading,
+.error,
+.not-found {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading {
+  font-size: 18px;
+  color: #64748b;
+}
+
+.error h2,
+.not-found h2 {
+  color: #dc2626;
+  margin-bottom: 10px;
+}
+
+.error p,
+.not-found p {
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .guide-detail-container {
+    padding: 15px;
+    padding-top: 80px;
+  }
+
+  .guide-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .guide-photo-wrapper {
+    width: 150px;
+    height: 150px;
+    min-width: 150px;
+    margin: 0 auto;
+  }
+
+  .guide-name {
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .guide-header-info {
+    align-items: center;
+    text-align: center;
+  }
+
+  .guide-excursions-list {
+    grid-template-columns: 1fr;
+  }
+
+  .content-section h2 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .guide-name {
+    font-size: 20px;
+  }
+
+  .guide-photo-wrapper {
+    width: 120px;
+    height: 120px;
+    min-width: 120px;
+  }
+
+  .guide-excursion-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .guide-excursion-price {
+    margin-left: 0;
+  }
+}
+

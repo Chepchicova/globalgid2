@@ -43,6 +43,12 @@ export default function AdminExcursionForm({ user }) {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
+  const [showNewLocation, setShowNewLocation] = useState(false);
+  const [newLocation, setNewLocation] = useState({ city: '', country: '' });
+  const [showNewSpecialization, setShowNewSpecialization] = useState(false);
+  const [newSpecialization, setNewSpecialization] = useState({ name: '' });
+  const [showNewLanguage, setShowNewLanguage] = useState(false);
+  const [newLanguage, setNewLanguage] = useState({ name: '' });
 
   // Проверка прав администратора
   useEffect(() => {
@@ -321,22 +327,51 @@ export default function AdminExcursionForm({ user }) {
   }
 
     // Проверка обязательных полей
-    if (!formData.location_id) {
+    if (!showNewLocation && !formData.location_id) {
       setError('Поле "Локация" обязательно для заполнения');
       setSaving(false);
       return;
     }
 
-    if (!formData.specialization_id) {
+    if (showNewLocation) {
+      if (!newLocation.city.trim()) {
+        setError('Поле "Город" обязательно для заполнения');
+        setSaving(false);
+        return;
+      }
+      if (!newLocation.country.trim()) {
+        setError('Поле "Страна" обязательно для заполнения');
+        setSaving(false);
+        return;
+      }
+    }
+
+    if (!showNewSpecialization && !formData.specialization_id) {
       setError('Поле "Категория" обязательно для заполнения');
       setSaving(false);
       return;
     }
 
-    if (!formData.language_id) {
+    if (showNewSpecialization) {
+      if (!newSpecialization.name.trim()) {
+        setError('Поле "Название категории" обязательно для заполнения');
+        setSaving(false);
+        return;
+      }
+    }
+
+    if (!showNewLanguage && !formData.language_id) {
       setError('Поле "Язык" обязательно для заполнения');
       setSaving(false);
       return;
+    }
+
+    if (showNewLanguage) {
+      if (!newLanguage.name.trim()) {
+        setError('Поле "Название языка" обязательно для заполнения');
+        setSaving(false);
+        return;
+      }
     }
 
     // Проверка даты (не должна быть в прошлом)
@@ -367,10 +402,96 @@ export default function AdminExcursionForm({ user }) {
     }
 
     try {
+      let finalLocationId = formData.location_id;
+      let finalSpecializationId = formData.specialization_id;
+      let finalLanguageId = formData.language_id;
+
+      // Если выбрана новая локация, создаем её
+      if (showNewLocation) {
+        const locationRes = await fetch(`${API_BASE}?method=createLocation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            city: newLocation.city.trim(),
+            country: newLocation.country.trim()
+          })
+        });
+
+        const locationData = await locationRes.json();
+
+        if (locationData.success) {
+          finalLocationId = locationData.location_id;
+          // Обновляем список локаций
+          const locationsRes = await fetch(`${API_BASE}?method=getAdminLocations`, { credentials: "include" });
+          const locationsData = await locationsRes.json();
+          if (locationsData.success) setLocations(locationsData.data);
+        } else {
+          setError(locationData.error || 'Ошибка создания локации');
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Если выбрана новая специализация, создаем её
+      if (showNewSpecialization) {
+        const specRes = await fetch(`${API_BASE}?method=createSpecialization`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: newSpecialization.name.trim()
+          })
+        });
+
+        const specData = await specRes.json();
+
+        if (specData.success) {
+          finalSpecializationId = specData.specialization_id;
+          // Обновляем список специализаций
+          const specsRes = await fetch(`${CLIENT_API_BASE}?method=getSpecializations`);
+          const specsData = await specsRes.json();
+          setSpecializations(specsData);
+        } else {
+          setError(specData.error || 'Ошибка создания категории');
+          setSaving(false);
+          return;
+        }
+      }
+
+      // Если выбран новый язык, создаем его
+      if (showNewLanguage) {
+        const langRes = await fetch(`${API_BASE}?method=createLanguage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: newLanguage.name.trim()
+          })
+        });
+
+        const langData = await langRes.json();
+
+        if (langData.success) {
+          finalLanguageId = langData.language_id;
+          // Обновляем список языков
+          const langsRes = await fetch(`${CLIENT_API_BASE}?method=getLanguages`);
+          const langsData = await langsRes.json();
+          setLanguages(langsData);
+        } else {
+          setError(langData.error || 'Ошибка создания языка');
+          setSaving(false);
+          return;
+        }
+      }
+
       const method = isEdit ? 'updateAdminExcursion' : 'createAdminExcursion';
       const payload = {
         ...formData,
         title: title,
+        location_id: finalLocationId,
+        specialization_id: finalSpecializationId,
+        language_id: finalLanguageId,
         excursion_id: isEdit ? parseInt(id) : undefined
       };
 
@@ -497,9 +618,17 @@ export default function AdminExcursionForm({ user }) {
             <label>Локация *</label>
             <select
               name="location_id"
-              value={formData.location_id}
-              onChange={handleChange}
-              required
+              value={showNewLocation ? 'new' : formData.location_id}
+              onChange={(e) => {
+                if (e.target.value === 'new') {
+                  setShowNewLocation(true);
+                  setFormData(prev => ({ ...prev, location_id: '' }));
+                } else {
+                  setShowNewLocation(false);
+                  setFormData(prev => ({ ...prev, location_id: e.target.value }));
+                }
+              }}
+              required={!showNewLocation}
             >
               <option value="">Выберите локацию</option>
               {locations.map(location => (
@@ -507,7 +636,48 @@ export default function AdminExcursionForm({ user }) {
                   {location.name}
                 </option>
               ))}
+              <option value="new">+ Добавить новую локацию</option>
             </select>
+            
+            {showNewLocation && (
+              <div style={{marginTop: '10px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', background: '#f9f9f9'}}>
+                <div style={{marginBottom: '10px'}}>
+                  <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Город *</label>
+                  <input
+                    type="text"
+                    value={newLocation.city}
+                    onChange={(e) => setNewLocation(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Введите город"
+                    maxLength={100}
+                    style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px'}}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Страна *</label>
+                  <input
+                    type="text"
+                    value={newLocation.country}
+                    onChange={(e) => setNewLocation(prev => ({ ...prev, country: e.target.value }))}
+                    placeholder="Введите страну"
+                    maxLength={100}
+                    style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px'}}
+                    required
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewLocation(false);
+                    setNewLocation({ city: '', country: '' });
+                    setFormData(prev => ({ ...prev, location_id: '' }));
+                  }}
+                  style={{marginTop: '10px', padding: '6px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                >
+                  Отмена
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -614,9 +784,17 @@ export default function AdminExcursionForm({ user }) {
             <label>Категория *</label>
             <select
               name="specialization_id"
-              value={formData.specialization_id}
-              onChange={handleChange}
-              required
+              value={showNewSpecialization ? 'new' : formData.specialization_id}
+              onChange={(e) => {
+                if (e.target.value === 'new') {
+                  setShowNewSpecialization(true);
+                  setFormData(prev => ({ ...prev, specialization_id: '' }));
+                } else {
+                  setShowNewSpecialization(false);
+                  setFormData(prev => ({ ...prev, specialization_id: e.target.value }));
+                }
+              }}
+              required={!showNewSpecialization}
             >
               <option value="">Выберите категорию</option>
               {specializations.map(spec => (
@@ -624,16 +802,88 @@ export default function AdminExcursionForm({ user }) {
                   {spec.name}
                 </option>
               ))}
+              <option value="new">+ Добавить новую категорию</option>
             </select>
+            
+            {showNewSpecialization && (
+              <div style={{marginTop: '10px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', background: '#f9f9f9'}}>
+                <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Название категории *</label>
+                <input
+                  type="text"
+                  value={newSpecialization.name}
+                  onChange={(e) => setNewSpecialization({ name: e.target.value })}
+                  placeholder="Введите название категории"
+                  maxLength={100}
+                  style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px'}}
+                  required
+                />
+                <div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!newSpecialization.name.trim()) {
+                        setError('Поле "Название" обязательно для заполнения');
+                        return;
+                      }
+                      try {
+                        const res = await fetch(`${API_BASE}?method=createSpecialization`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          credentials: "include",
+                          body: JSON.stringify({ name: newSpecialization.name.trim() })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          // Обновляем список специализаций
+                          const specsRes = await fetch(`${CLIENT_API_BASE}?method=getSpecializations`);
+                          const specsData = await specsRes.json();
+                          setSpecializations(specsData);
+                          // Автоматически выбираем новую специализацию
+                          setFormData(prev => ({ ...prev, specialization_id: data.specialization_id }));
+                          setShowNewSpecialization(false);
+                          setNewSpecialization({ name: '' });
+                        } else {
+                          setError(data.error || 'Ошибка создания категории');
+                        }
+                      } catch (err) {
+                        setError('Ошибка создания категории');
+                      }
+                    }}
+                    style={{padding: '6px 12px', background: '#44706d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px'}}
+                  >
+                    Добавить
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewSpecialization(false);
+                      setNewSpecialization({ name: '' });
+                      setFormData(prev => ({ ...prev, specialization_id: '' }));
+                    }}
+                    style={{padding: '6px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="form-group">
             <label>Язык *</label>
             <select
               name="language_id"
-              value={formData.language_id}
-              onChange={handleChange}
-              required
+              value={showNewLanguage ? 'new' : formData.language_id}
+              onChange={(e) => {
+                if (e.target.value === 'new') {
+                  setShowNewLanguage(true);
+                  setFormData(prev => ({ ...prev, language_id: '' }));
+                } else {
+                  setShowNewLanguage(false);
+                  setFormData(prev => ({ ...prev, language_id: e.target.value }));
+                }
+              }}
+              required={!showNewLanguage}
             >
               <option value="">Выберите язык</option>
               {languages.map(lang => (
@@ -641,7 +891,71 @@ export default function AdminExcursionForm({ user }) {
                   {lang.name}
                 </option>
               ))}
+              <option value="new">+ Добавить новый язык</option>
             </select>
+            
+            {showNewLanguage && (
+              <div style={{marginTop: '10px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', background: '#f9f9f9'}}>
+                <label style={{display: 'block', marginBottom: '5px', fontWeight: '500'}}>Название языка *</label>
+                <input
+                  type="text"
+                  value={newLanguage.name}
+                  onChange={(e) => setNewLanguage({ name: e.target.value })}
+                  placeholder="Введите название языка"
+                  maxLength={100}
+                  style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '10px'}}
+                  required
+                />
+                <div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!newLanguage.name.trim()) {
+                        setError('Поле "Название" обязательно для заполнения');
+                        return;
+                      }
+                      try {
+                        const res = await fetch(`${API_BASE}?method=createLanguage`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          credentials: "include",
+                          body: JSON.stringify({ name: newLanguage.name.trim() })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          // Обновляем список языков
+                          const langsRes = await fetch(`${CLIENT_API_BASE}?method=getLanguages`);
+                          const langsData = await langsRes.json();
+                          setLanguages(langsData);
+                          // Автоматически выбираем новый язык
+                          setFormData(prev => ({ ...prev, language_id: data.language_id }));
+                          setShowNewLanguage(false);
+                          setNewLanguage({ name: '' });
+                        } else {
+                          setError(data.error || 'Ошибка создания языка');
+                        }
+                      } catch (err) {
+                        setError('Ошибка создания языка');
+                      }
+                    }}
+                    style={{padding: '6px 12px', background: '#44706d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '10px'}}
+                  >
+                    Добавить
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewLanguage(false);
+                      setNewLanguage({ name: '' });
+                      setFormData(prev => ({ ...prev, language_id: '' }));
+                    }}
+                    style={{padding: '6px 12px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -54,8 +54,48 @@ switch ($method) {
         getAdminGuides();
         break;
     
+    case 'getAdminGuidesList':
+        getAdminGuidesList();
+        break;
+    
     case 'getAdminLocations':
         getAdminLocations();
+        break;
+    
+    case 'toggleAdminGuideStatus':
+        toggleAdminGuideStatus();
+        break;
+    
+    case 'deleteAdminGuide':
+        deleteAdminGuide();
+        break;
+    
+    case 'getAdminGuide':
+        if (!isset($_GET['id'])) {
+            echo json_encode(['success' => false, 'error' => 'ID не указан']);
+            break;
+        }
+        getAdminGuide((int)$_GET['id']);
+        break;
+    
+    case 'createAdminGuide':
+        createAdminGuide();
+        break;
+    
+    case 'updateAdminGuide':
+        updateAdminGuide();
+        break;
+    
+    case 'createLocation':
+        createLocation();
+        break;
+    
+    case 'createSpecialization':
+        createSpecialization();
+        break;
+    
+    case 'createLanguage':
+        createLanguage();
         break;
 
     default:

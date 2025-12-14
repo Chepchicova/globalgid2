@@ -1,0 +1,366 @@
+.guides-page {
+  font-family: Arial, sans-serif;
+  background-color: rgba(241, 243, 248, 1);
+}
+
+.banner--guides {
+  position: relative;
+  text-align: center;
+  padding: 120px 20px 60px 20px;
+  background: url("../components/images/veliki.jpg") no-repeat center/cover;
+  color: white;
+  overflow: hidden;
+}
+
+.banner--guides::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.banner--guides h1,
+.banner--guides p,
+.banner--guides .search-form {
+  position: relative;
+  z-index: 2;
+}
+
+.banner--guides h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.banner--guides p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.guides-page .search-form {
+  display: flex;
+  justify-content: center;
+  width: 750px;
+  margin: 0 auto;
+  gap: 12px;
+  background: rgba(198, 228, 230, 0.8);
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.search-bar-banner {
+  position: relative;
+  width: 60%;
+  max-width: 400px;
+}
+
+.search-icons {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.search-bar-banner input {
+  width: 100%;
+  padding: 8px 12px 8px 35px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.guides-page .search-form button {
+  padding: 8px 16px;
+  background-color: rgba(45, 75, 73, 1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.guides-page .search-form button:hover {
+  background-color: #44706d;
+}
+
+button.clear-date-btn {
+  all: unset !important;
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  font-size: 22px !important;
+  color: #000 !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+}
+
+.clear-date-btn:hover {
+  color: #000;
+}
+
+.guides-content {
+  max-width: 85%;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.guides-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.guides-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.guide-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guide-card-link:hover {
+  transform: translateY(-2px);
+}
+
+.guide-card-link:hover .guide-card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.guide-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.guide-image-wrapper {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  overflow: hidden;
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+
+.guide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.guide-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.guide-rating-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.guide-rating {
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.guide-location {
+  color: #64748b;
+}
+
+.guide-card h2.guide-name,
+.guide-card .guide-name {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.guide-bio {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.guide-stats {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.guide-stat {
+  font-size: 13px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+/* Кнопка "Посмотреть все гиды" */
+.show-all-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.show-all-button {
+  padding: 14px 32px;
+  background: #fff;
+  color: #2fb65d;
+  border: 2px solid #2fb65d;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.show-all-button:hover {
+  background: #2fb65d;
+  color: #fff;
+}
+
+.loading {
+  text-align: center;
+  padding: 100px 20px;
+  font-size: 18px;
+  color: #475569;
+}
+
+/* Адаптив для баннера */
+@media (max-width: 730px) {
+  .guides-page .search-form {
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .search-bar-banner,
+  .guides-page .search-form button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .search-icons {
+    display: none;
+  }
+
+  .search-bar-banner input {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner--guides {
+    padding: 100px 20px 45px 20px;
+  }
+
+  .banner--guides h1 {
+    font-size: 28px;
+  }
+
+  .banner--guides p {
+    font-size: 15px;
+  }
+}
+
+/* Адаптив для контента */
+@media (max-width: 1024px) {
+  .guides-content {
+    max-width: 95%;
+    gap: 20px;
+  }
+
+  .guides-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 830px) {
+  .guides-content {
+    max-width: 100%;
+    padding: 20px;
+  }
+
+  .guides-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .guide-image-wrapper {
+    width: 150px;
+    min-width: 150px;
+  }
+
+  .guide-info {
+    padding: 14px;
+  }
+
+  .guide-card h2.guide-name,
+  .guide-card .guide-name {
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .guides-list {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .guide-card {
+    flex-direction: column;
+  }
+
+  .guide-image-wrapper {
+    width: 100%;
+    height: 200px;
+  }
+}
+

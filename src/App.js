@@ -3,11 +3,15 @@ import { useState, useEffect } from "react";
 import Home from "./pages/Home";
 import Excursions from "./pages/Excursions";
 import ExcursionDetail from "./pages/excursionDetail"; // ИМПОРТ ДЕТАЛЬНОЙ СТРАНИЦЫ
+import Guides from "./pages/Guides";
+import GuideDetail from "./pages/GuideDetail";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Profile from "./pages/Profile";
 import AdminExcursions from "./pages/AdminExcursions";
 import AdminExcursionForm from "./pages/AdminExcursionForm";
+import AdminGuides from "./pages/AdminGuides";
+import AdminGuideForm from "./pages/AdminGuideForm";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -114,6 +118,7 @@ return (
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/excursions" element={<Excursions user={user} />} />
+          <Route path="/guides" element={<Guides user={user} />} />
           <Route 
             path="/profile" 
             element={
@@ -124,11 +129,16 @@ return (
           />
           {/* НОВЫЙ МАРШРУТ ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ЭКСКУРСИИ */}
           <Route path="/excursion/:id" element={<ExcursionDetail user={user} />} />
+          {/* МАРШРУТ ДЛЯ ДЕТАЛЬНОЙ СТРАНИЦЫ ГИДА */}
+          <Route path="/guide/:id" element={<GuideDetail user={user} />} />
           
           {/* Администраторские маршруты */}
           <Route path="/admin/excursions" element={<AdminExcursions user={user} />} />
           <Route path="/admin/excursions/create" element={<AdminExcursionForm user={user} />} />
           <Route path="/admin/excursions/edit/:id" element={<AdminExcursionForm user={user} />} />
+          <Route path="/admin/guides" element={<AdminGuides user={user} />} />
+          <Route path="/admin/guides/create" element={<AdminGuideForm user={user} />} />
+          <Route path="/admin/guides/edit/:id" element={<AdminGuideForm user={user} />} />
         </Routes>
       </main>
       <Footer />
