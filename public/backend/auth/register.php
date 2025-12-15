@@ -1,11 +1,11 @@
 <?php
 // backend/auth/register.php
-require_once 'cors.php';
+require_once __DIR__ . '/../config/cors.php';
 header('Content-Type: application/json');
 session_start();
 
 // Подключаем класс БД
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../config/db.php';
 
 // Создаем подключение
 $database = new Database();

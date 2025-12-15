@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/adminExcursionForm.css";
 
-const API_BASE = "http://localhost/globalgid2/public/backend/admin.php";
-const CLIENT_API_BASE = "http://localhost/globalgid2/public/backend/api.php";
+const API_BASE = "http://localhost/globalgid2/public/backend/admin/admin.php";
+const CLIENT_API_BASE = "http://localhost/globalgid2/public/backend/api/api.php";
 
 export default function AdminExcursionForm({ user }) {
   const navigate = useNavigate();
@@ -167,7 +167,7 @@ export default function AdminExcursionForm({ user }) {
         formData.append('images[]', files[i]);
       }
       
-      const response = await fetch('http://localhost/globalgid2/public/backend/upload_excursion_images.php', {
+      const response = await fetch('http://localhost/globalgid2/public/backend/uploads/upload_excursion_images.php', {
         method: 'POST',
         credentials: 'include',
         body: formData
@@ -192,7 +192,7 @@ export default function AdminExcursionForm({ user }) {
     if (!window.confirm('Удалить это изображение?')) return;
     
     try {
-      const response = await fetch('http://localhost/globalgid2/public/backend/delete_excursion_image.php', {
+      const response = await fetch('http://localhost/globalgid2/public/backend/uploads/delete_excursion_image.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

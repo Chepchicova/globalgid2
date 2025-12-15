@@ -360,7 +360,7 @@ function BookingsTab() {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch(`${API_BASE}/backend/get_user_bookings.php`, {
+            const response = await fetch(`${API_BASE}/backend/bookings/get_user_bookings.php`, {
                 credentials: "include",
             });
             
@@ -388,7 +388,7 @@ function BookingsTab() {
         if (!bookingToCancel) return;
 
         try {
-            const response = await fetch(`${API_BASE}/backend/cancel_booking.php`, {
+            const response = await fetch(`${API_BASE}/backend/bookings/cancel_booking.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -440,7 +440,7 @@ function BookingsTab() {
 
         try {
             setReviewSubmitting(true);
-            const response = await fetch(`${API_BASE}/backend/submit_review.php`, {
+            const response = await fetch(`${API_BASE}/backend/reviews/submit_review.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -714,7 +714,7 @@ function FavoritesTab() {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch(`${API_BASE}/backend/get_favorites.php`, {
+            const response = await fetch(`${API_BASE}/backend/favorites/get_favorites.php`, {
                 credentials: "include",
             });
             

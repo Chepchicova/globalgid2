@@ -9,7 +9,7 @@ import "react-date-range/dist/theme/default.css";
 import { ru } from "date-fns/locale";
 import "../styles/excursions.css";
 
-const API_BASE = "http://localhost/globalgid2/public/backend/api.php";
+const API_BASE = "http://localhost/globalgid2/public/backend/api/api.php";
 
 // Функции для работы с датами
 const formatDateForAPI = (date) => {
@@ -91,14 +91,44 @@ const CheckboxFilterGroup = ({
 // ==================== КОМПОНЕНТ ИНЛАЙНОВОГО ПОЛЯ ====================
 const InlineField = ({ label, placeholder, type = "number", min, max, fun, typeV}) => {
  
+  const handleKeyDown = (e) => {
+    // Блокируем ввод минуса
+    if (e.key === '-' || e.key === '+') {
+      e.preventDefault();
+      return;
+    }
+    // Разрешаем: цифры, Backspace, Delete, Tab, Escape, Enter, стрелки, точка (для десятичных)
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+    const isNumber = /[0-9]/.test(e.key);
+    const isDot = e.key === '.' && type === 'number';
+    
+    if (!isNumber && !isDot && !allowedKeys.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+    }
+  };
+
+  const handleChange = (e) => {
+    let value = e.target.value;
+    
+    // Удаляем все символы, кроме цифр
+    value = value.replace(/[^0-9]/g, '');
+    
+    // Убеждаемся, что значение не отрицательное
+    if (value === '' || (parseFloat(value) >= 0)) {
+      fun(typeV, value);
+    }
+  };
+
   return (
     <div className="inline-field">
       <span className="inline-label">{label}</span>
       <input 
-        type={type} 
+        type="text" 
+        inputMode="numeric"
         min={min} 
         max={max} 
-        onChange={(e) => fun(typeV, e.target.value)}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder} 
         className="input" 
       />
@@ -654,10 +684,26 @@ const ExcursionsPage = () => {
   };
 
   const changePrice = (type, value) => {
-    setPriceRange(prev => ({
-      ...prev,
-      [type]: value
-    }));
+    // Фильтруем недопустимые значения
+    if (value === '' || value === null || value === undefined) {
+      setPriceRange(prev => ({
+        ...prev,
+        [type]: ''
+      }));
+      return;
+    }
+    
+    // Удаляем все нецифровые символы
+    const numericValue = String(value).replace(/[^0-9]/g, '');
+    
+    // Проверяем, что значение не отрицательное
+    const numValue = parseFloat(numericValue);
+    if (!isNaN(numValue) && numValue >= 0) {
+      setPriceRange(prev => ({
+        ...prev,
+        [type]: numericValue
+      }));
+    }
   };
 
   const changeDuration = (type, value) => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/adminExcursions.css";
 
-const API_BASE = "http://localhost/globalgid2/public/backend/admin.php";
+const API_BASE = "http://localhost/globalgid2/public/backend/admin/admin.php";
 
 export default function AdminExcursions({ user }) {
   const navigate = useNavigate();

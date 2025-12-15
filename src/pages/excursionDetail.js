@@ -57,7 +57,7 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
       }
 
       try {
-        const response = await fetch(`${API_BASE}/check_favorite.php?excursion_id=${id}`, {
+        const response = await fetch(`${API_BASE}/favorites/check_favorite.php?excursion_id=${id}`, {
           credentials: 'include'
         });
         
@@ -219,7 +219,7 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
     setBookingSuccess(false);
 
     try {
-      const response = await fetch(`${API_BASE}/booking.php`, {
+      const response = await fetch(`${API_BASE}/bookings/booking.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -279,7 +279,7 @@ const ExcursionDetail = ({ user, onLoginSuccess }) => {
     setFavoriteLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/toggle_favorite.php`, {
+      const response = await fetch(`${API_BASE}/favorites/toggle_favorite.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

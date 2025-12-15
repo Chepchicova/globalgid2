@@ -18,6 +18,8 @@ import romeImg from '../components/images/rome.jpg';
 import guideFieldImg from '../components/images/guide_field.jpg';
 import viewImg from '../components/images/view.jpg';
 
+const API_BASE = "http://localhost/globalgid2/public/backend/api/api.php";
+
 export default function Home() {
 
   /* массив для попул направл можно добавить если время будет подсчет 
@@ -53,7 +55,7 @@ const handleSubmit = async (e) => {
   const payload = { name, phone };
 
   try {
-    const res = await fetch("/backend/api.php?method=createRequest", {
+    const res = await fetch(`${API_BASE}?method=createRequest`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

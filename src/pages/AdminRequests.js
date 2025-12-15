@@ -25,7 +25,7 @@ export default function AdminRequests({ user }) {
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/get_requests.php`, {
+      const response = await fetch(`${API_BASE}/requests/get_requests.php`, {
         credentials: "include",
       });
       
@@ -51,7 +51,7 @@ export default function AdminRequests({ user }) {
   // Обработка заявки
   const handleProcess = async (requestId) => {
     try {
-      const response = await fetch(`${API_BASE}/update_request_status.php`, {
+      const response = await fetch(`${API_BASE}/requests/update_request_status.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

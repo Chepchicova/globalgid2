@@ -1,6 +1,6 @@
 <?php
 // backend/auth/logout.php
-require_once 'cors.php';
+require_once __DIR__ . '/../config/cors.php';
 header('Content-Type: application/json');
 session_start();
 

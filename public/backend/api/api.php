@@ -4,8 +4,8 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=utf-8");
 
-require_once "db.php";
-require_once "functions.php";
+require_once __DIR__ . "/../config/db.php";
+require_once __DIR__ . "/functions.php";
 
 $method = $_GET['method'] ?? '';
 
@@ -99,3 +99,4 @@ switch ($method) {
 exit;
 
 //до//
+

@@ -1,10 +1,10 @@
 <?php
 // Файл для отмены бронирования
-require_once "auth/cors.php";
+require_once __DIR__ . "/../config/cors.php";
 session_start();
 header("Content-Type: application/json; charset=utf-8");
 
-require_once "db.php";
+require_once __DIR__ . "/../config/db.php";
 
 // Проверка авторизации
 if (!isset($_SESSION['user_id'])) {

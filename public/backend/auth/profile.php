@@ -1,7 +1,7 @@
 <?php
 // C:\xampp\htdocs\globalgid\public\backend\auth\profile.php
 
-require_once 'cors.php';
+require_once __DIR__ . '/../config/cors.php';
 header('Content-Type: application/json');
 
 session_start();
@@ -16,7 +16,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 // Подключаем класс БД
-require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../config/db.php';
 
 // Создаем подключение
 $database = new Database();

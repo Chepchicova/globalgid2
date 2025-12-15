@@ -1,5 +1,5 @@
 <?php
-// backend/auth/cors.php - общие CORS настройки
+// backend/config/cors.php - общие CORS настройки
 
 // Разрешаем запросы с localhost:3000 (React)
 header("Access-Control-Allow-Origin: http://localhost:3000");

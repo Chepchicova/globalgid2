@@ -1,6 +1,6 @@
 <?php
 // Тестовый файл для проверки подключения
-require_once "auth/cors.php";
+require_once __DIR__ . "/../config/cors.php";
 header("Content-Type: application/json; charset=utf-8");
 
 session_start();

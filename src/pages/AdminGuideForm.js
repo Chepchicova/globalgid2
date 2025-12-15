@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/adminExcursionForm.css";
 
-const API_BASE = "http://localhost/globalgid2/public/backend/admin.php";
-const CLIENT_API_BASE = "http://localhost/globalgid2/public/backend/api.php";
-const UPLOAD_IMAGE_URL = "http://localhost/globalgid2/public/backend/upload_guide_image.php";
+const API_BASE = "http://localhost/globalgid2/public/backend/admin/admin.php";
+const CLIENT_API_BASE = "http://localhost/globalgid2/public/backend/api/api.php";
+const UPLOAD_IMAGE_URL = "http://localhost/globalgid2/public/backend/uploads/upload_guide_image.php";
 
 export default function AdminGuideForm({ user }) {
   const navigate = useNavigate();
